@@ -1,0 +1,183 @@
+\documentclass[times, utf8, zavrsni]{fer}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\hypersetup{
+unicode=true, % za unicode podršku u bookmarkovima i sl., svakako postaviti na true
+colorlinks=true, % za prikaz linkova u boji umjesto u pravokutnicima; slijede postavke po klasama linkova
+linkcolor=black, % možete koristiti ime bilo koje definirane boje (pročitati post u kojem je predstavljen paket xcolor)
+citecolor=black,
+filecolor=black,
+urlcolor=black,
+linktocpage=false, % ako želite da oznaka stranice u tablici sadržaja bude link umjesto naslova, postavite na true
+bookmarksopen=true, % pri otvaranju dokumenta će se prikazati toolbar s bookmarkovima, jako korisno
+bookmarksopenlevel=1, % bookmarkovi su prikazani u stablastoj strukturi, a ovim određujete do koje će dubine stablo bookmarkova biti razgranato
+bookmarksnumbered=true, % uz imena bookmarkova će se prikazati i njihov broj
+pdftitle={SWIG - Poravnanje struktura korištenjem iterativne primjene Smith-Waterman algoritma},
+pdfauthor={Bruno Rahle},
+pdfsubject={tema},
+pdfkeywords={kljucne rijeci - odvojite ih razmakom},
+pdfstartpage={}, % ovisno koji stil numeriranja stranica koristite (\Roman, \roman, \arabic, \alph, \Alph), možete postaviti broj (oznaku) stranice koja će se prikazati prilikom otvaranja dokumenta; prazne vitičaste zagrade uvijek znače prvu stranicu, bez obzira na koji način bila numerirana
+pdfstartview=FitH, % dokument će se prikazati tako da će mu širina odgovarati širini PDF preglednika
+}
+
+
+\begin{document}
+
+% TODO: Navedite broj rada.
+\thesisnumber{2321}
+
+% TODO: Navedite naslov rada.
+\title{SWIG - Poravnanje struktura korištenjem iterativne primjene Smith-Waterman algoritma}
+
+% TODO: Navedite vaše ime i prezime.
+\author{Bruno Rahle}
+
+\maketitle
+
+% Ispis stranice s napomenom o umetanju izvornika rada. Uklonite naredbu \izvornik ako želite izbaciti tu stranicu.
+\izvornik
+
+% Dodavanje zahvale ili prazne stranice. Ako ne želite dodati zahvalu, naredbu ostavite radi prazne stranice.
+\zahvala{}
+
+\tableofcontents
+
+\listoffigures
+
+\listoftables
+
+\chapter{Uvod}
+Problemi s kojima se znanost danas susreće često prelaze granice isključivo
+jedne discipline. 
+
+- pričaj o: bioinformatici, koje probleme ona rješava, zašto je problem koji si rješavao bitan,
+kome koristi, kako se može koristiti i potencijalno za što se sve može koristiti.
+- napiši zašto je ovo što si napravio jebeno i kako se može još poboljšati.
+- cca 2 stranice
+
+\chapter{Poravanavanje sturktura}
+- detaljan opis problema
+- cca 1-2 stranice
+
+\chapter{Smith-Watermanov algoritam}
+(cca 4-5 stranica)
+
+Smith-Watermanov algoritam služi nam da bismo pronašli lokalno poravnanje. 
+Osmislili su ga Temple F. Smith i Michael S. Waterman 1981. \cite{smithwaterman1981}.
+Temelji se na Needleman-Wunschevom algoritmu (\cite{needlemanwunsch1970})
+te i sam spada u kategoriju algoritama dinamičkog programiranja. 
+
+- napisi jos teksta ovdje.
+
+\section{Needleman-Wunschov algoritam}
+Algoritam, kao što je već rečeno, traži globalno poravnanje. To znači da se svi 
+članovi ulaznih nizova moraju poravnati. Dopuštene operacije kada tražimo poravnanje
+su preklapanje s elementom iz suprotnog niza i ubacivanje praznina u neki od nizova.
+Sve parove elemenata u dobivenom preklapanju bodujemo i na osnovu te ocjene
+određujemo sličnost nizova. Konačan rezultat ovog algoritma jest poravnanje koje
+maksimizira takvu ocjenu, tj. daje maksimalno globalno poravnanje.
+
+Zanimljivost je da je to prvi algoritam dinamičkog programiranja ikada primjenjen
+u bioinformatici.
+
+\subsection{Ulazni podaci}
+\begin{enumerate}
+	\item Dva niza ($A$ i $B$) proteina ili nukleotida. Zbog jednostavnosti, pretpostavit
+		ćemo da su to nukleotidi iz DNK - adenin (A), timin (T), gvanin (G) i citozin (C).
+		U primjeru ćemo koristiti $A = "ATGCCGTA"$ i $B = "TGCCTA"$. Dužinu niza $A$ označit
+		ćemo s $N$, a dužinu niza $B$ s $M$. 
+	\item Matrica $S$, koja nam daje bodove koje dobijemo kada jedan nukletoid preklopimo
+		s drugim. U našem će slučaju imati dimenzije $4 \times 4$, budući da ćemo razmatrati
+		slučaj kada imamo samo četiri nukleotida. U principu će na dijagonali imati pozitivne
+		brojeve, a na ostalim poljima negativne. To znači da nam se najviše isplati 
+		preklapati nukletide istog tipa, jer za to dobivamo bodove, a inače
+		gubimo bodove. Primjer jedne takve matrice koju ćemo koristiti i u primjeru:
+		
+		$\begin{tabular}{c|cccc}
+		& A & C & G & T \\\specialrule{1pt}{0pt}{0pt}
+		A & 10 & -3 & -9 & -1 \\
+		C & -5 & 8 & -8 & -7 \\
+		G & -5 & -4 & 7 & -5\\
+		T & -4 & -11 & -8 & 9
+		\end{tabular}
+		$
+	\item Negativan broj $d$, koji označava bodove koje dobijemo (tj. izgubimo) kada nukleotid
+		preklopimo s prazninom. 
+\end{enumerate}
+
+\subsection{Izlazni podaci}
+\begin{enumerate}
+	\item Broj $H$, ocjena najboljeg globalnog poravnanja.
+	\item Dva nova niza jednake dužine, $A'$ i $B'$, nastala ubacivanjem praznina
+		(označenih najčešće sa '-') u nizove $A$ i $B$ koja predstavljaju najbolje pronađeno
+		poravnanje.
+\end{enumerate}
+
+\subsection{Algoritam}
+Neka nam matrica $F_{i,j}$ označava maksimalan broj bodova koje možemo dobiti kada
+poravnamo prvih $i$ članova niza $A$ i prvih $j$ članova niza $B$. $F_{i,j}$ možemo
+računati rekurzijom na slijedeći način:
+$$
+F_{i,j} = \left\{
+	\begin{array}{lr}
+		0 & \mbox{ako je } i=0 \mbox{ i } j=0 \\
+		i \cdot d & \mbox{ako je } i>0 \mbox{ i } j=0 \\
+		j \cdot d & \mbox{ako je } i=0 \mbox{ i } j>0 \\
+		max \left(
+			\begin{array}{l}
+				F_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \\
+				F_{i-1, j} + d \\
+				F_{i, j-1} + d
+			\end{array}
+		\right) & \mbox{ako je } i>0 \mbox{ i } j>0
+	\end{array}
+\right.
+$$
+
+\subsection{Primjer}
+
+\subsection{Analiza složenosti}
+
+
+\chapter{Algoritam simuliranog kaljenja}
+- objasni i zašto si uzeo više nizova odjednom, kako od njih biraš najboljeg i slično.
+- cca 4 starnice
+
+\chapter{CUDA tehnologija}
+- cca 2 stranice
+
+- prednosti i mane, problemi i rjesenja
+
+\chapter{Implementacija}
+- cca 5 stranica
+
+- kako je sve spojeno
+
+- detalji implementacije - koje funkcije ocjene sam koristio, kako sam došao do njih
+
+\chapter{Rezultati}
+- cca 1-2 starnice
+
+\chapter{Zaključak}
+Zaključak.
+- cca 1-2 stranice
+
+\bibliography{literatura}{}
+\bibliographystyle{fer}
+% cca 2 stranice
+
+\begin{sazetak}
+Sažetak na hrvatskom jeziku.
+
+\kljucnerijeci{Ključne riječi, odvojene zarezima.}
+\end{sazetak}
+
+% TODO: Navedite naslov na engleskom jeziku.
+\engtitle{Title}
+\begin{abstract}
+Abstract.
+
+\keywords{Keywords.}
+\end{abstract}
+
+\end{document}
