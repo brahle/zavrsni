@@ -19,7 +19,9 @@ pdfkeywords={kljucne rijeci - odvojite ih razmakom},
 pdfstartpage={}, % ovisno koji stil numeriranja stranica koristite (\Roman, \roman, \arabic, \alph, \Alph), možete postaviti broj (oznaku) stranice koja će se prikazati prilikom otvaranja dokumenta; prazne vitičaste zagrade uvijek znače prvu stranicu, bez obzira na koji način bila numerirana
 pdfstartview=FitH, % dokument će se prikazati tako da će mu širina odgovarati širini PDF preglednika
 }
-
+\def\subsectionautorefname{odlomak}
+\def\sectionautorefname{potpoglavlje}
+\def\chapterautorefname{poglavlje}
 
 \begin{document}
 
@@ -65,11 +67,14 @@ kome koristi, kako se može koristiti i potencijalno za što se sve može korist
 Smith-Watermanov algoritam služi nam da bismo pronašli lokalno poravnanje. 
 Osmislili su ga Temple F. Smith i Michael S. Waterman 1981. \cite{smithwaterman1981}.
 Temelji se na Needleman-Wunschevom algoritmu (\cite{needlemanwunsch1970})
-te i sam spada u kategoriju algoritama dinamičkog programiranja. 
+te i sam spada u kategoriju algoritama dinamičkog programiranja. Glavna razlika
+između ta dva algoritma jest što Needleman-Wunschov algoritam prolazi globalno
+poravananje.
 
 - napisi jos teksta ovdje.
 
 \section{Needleman-Wunschov algoritam}
+\label{sec:nwalg}
 Algoritam, kao što je već rečeno, traži globalno poravnanje. To znači da se svi 
 članovi ulaznih nizova moraju poravnati. Dopuštene operacije kada tražimo poravnanje
 su preklapanje s elementom iz suprotnog niza i ubacivanje praznina u neki od nizova.
@@ -81,10 +86,11 @@ Zanimljivost je da je to prvi algoritam dinamičkog programiranja ikada primjenj
 u bioinformatici.
 
 \subsection{Ulazni podaci}
+\label{subsec:nwinp}
 \begin{enumerate}
 	\item Dva niza ($A$ i $B$) proteina ili nukleotida. Zbog jednostavnosti, pretpostavit
 		ćemo da su to nukleotidi iz DNK - adenin (A), timin (T), gvanin (G) i citozin (C).
-		U primjeru ćemo koristiti $A = "ATGCCGTA"$ i $B = "TGCCTA"$. Dužinu niza $A$ označit
+		U primjeru ćemo koristiti $A = "ATGCCGTA"$ i $B = "TGCACTA"$. Dužinu niza $A$ označit
 		ćemo s $N$, a dužinu niza $B$ s $M$. 
 	\item Matrica $S$, koja nam daje bodove koje dobijemo kada jedan nukletoid preklopimo
 		s drugim. U našem će slučaju imati dimenzije $4 \times 4$, budući da ćemo razmatrati
@@ -102,10 +108,11 @@ u bioinformatici.
 		\end{tabular}
 		$
 	\item Negativan broj $d$, koji označava bodove koje dobijemo (tj. izgubimo) kada nukleotid
-		preklopimo s prazninom. 
+		preklopimo s prazninom. U primjeru ćemo koristiti $d = -5$.
 \end{enumerate}
 
 \subsection{Izlazni podaci}
+\label{subsec:nwout}
 \begin{enumerate}
 	\item Broj $H$, ocjena najboljeg globalnog poravnanja.
 	\item Dva nova niza jednake dužine, $A'$ i $B'$, nastala ubacivanjem praznina
@@ -114,15 +121,17 @@ u bioinformatici.
 \end{enumerate}
 
 \subsection{Algoritam}
-Neka nam matrica $F_{i,j}$ označava maksimalan broj bodova koje možemo dobiti kada
+\label{subsec:nwalg}
+Neka nam matrica $F$ služi za računanje poravnanja. 
+Tada će nam $F_{i,j}$ označavati maksimalan broj bodova koje možemo dobiti kada
 poravnamo prvih $i$ članova niza $A$ i prvih $j$ članova niza $B$. $F_{i,j}$ možemo
 računati rekurzijom na slijedeći način:
 $$
 F_{i,j} = \left\{
 	\begin{array}{lr}
 		0 & \mbox{ako je } i=0 \mbox{ i } j=0 \\
-		i \cdot d & \mbox{ako je } i>0 \mbox{ i } j=0 \\
-		j \cdot d & \mbox{ako je } i=0 \mbox{ i } j>0 \\
+		F_{i-1,j} + d & \mbox{ako je } i>0 \mbox{ i } j=0 \\
+		F_{i,j-1} + d & \mbox{ako je } i=0 \mbox{ i } j>0 \\
 		max \left(
 			\begin{array}{l}
 				F_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \\
@@ -134,9 +143,100 @@ F_{i,j} = \left\{
 \right.
 $$
 
+U $F_{N,M}$ će nam stoga pisati maksimalno globalno poravnanje. Primjetite da
+u niti jednom slučaju nećemo poravnati dvije praznine. Ako bismo to učinili, 
+samo bismo izgubili bodove, budući da je $d$ nužno negativan broj.
+
+Da bismo znali rekonstruirati rješenje, koristit ćemo matricu $R$. U
+polju $R_{i,j}$  pisat će koje smo polje matrice $F$ koristili da bi došli u
+polje $F_{i,j}$. Kako su jedine mogućnosti $F_{i-1,j}$, $F_{i,j-1}$, $F_{i-1,j-1}$
+i da nismo došli iz nikojeg polja (to vrijedi jedino za polje $F_{0,0}$), koristit
+ćemo redom oznake $A$, $B$, $O$ i $X$. 
+
+$$
+R_{i,j} = \left\{
+	\begin{array}{ll}
+		X & \mbox{ako vrijedi} \left( \begin{array}{l} i=0 \\ j=0 \end{array} \right) \\
+		O & \mbox{ako vrijedi} \left( \begin{array}{l} i>0 \\ j>0 \\
+				F_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \geq F_{i-1,j} + d \\
+				F_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \geq F_{i,j-1} + d \\
+			\end{array} \right) \\
+		A & \mbox{ako vrijedi} \left( \begin{array}{l} i>0 \\ j=0 \end{array} \right)
+			\mbox{ili} \left( \begin{array}{l} i>0 \\ j>0 \\
+				F_{i-1,j} + d > F_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \\
+				F_{i-1,j} + d \geq F_{i,j-1} + d
+			\end{array} \right) \\
+		B & \mbox{ako vrijedi} \left( \begin{array}{l} i=0 \\ j>0 \end{array} \right)
+			\mbox{ili} \left( \begin{array}{l} i>0 \\ j>0 \\
+				F_{i,j-1} + d > F_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \\
+				F_{i,j-1} + d > F_{i-1,j} + d
+			\end{array} \right) \\
+	\end{array}
+\right.
+$$
+
+Rekonstrukciju provodimo tako krenemo iz polja $R_{N,M}$ i krećemo se
+po matrici unazad dok ne dođemo do polja $R_{0,0}$. Ako na polju pročitamo $O$,
+pomičemo se po dijagonili, tj. u izlazni niz spremimo par $(A_{i-1}, B_{j-1})$ te
+smanjimo i $i$ i $j$. Ako pročitamo $A$, spremamo par $(A_{i-1}, -)$ te smanjimo
+samo $i$ za jedan. U slučaju da pročitamo $B$, spremamo par $(-, B_{j-1})$ te
+smanjujemo $j$ za jedan. Ako smo pročitali $X$, došli smo do kraja i generirali
+smo izlazni niz, ali u obrnutom redosljedu. 
+
 \subsection{Primjer}
+Za prethodno navedene ulazne podatke, matrice $F$ i $R$ izgledat će ovako:
+$$
+F = \begin{tabular}{c|cccccccc}
+ & - & T & G & C & A & C & T & A \\\specialrule{1pt}{0pt}{0pt}
+- & 0 & -5 & -10 & -15 & -20 & -25 & -30 & -35 \\ 
+A & -5 & -1 & -6 & -11 & -5 & -10 & -15 & -20 \\ 
+T & -10 & 4 & -1 & -6 & -10 & -15 & -1 & -6 \\ 
+G & -15 & -1 & 11 & 6 & 1 & -4 & -6 & -6 \\ 
+C & -20 & -6 & 6 & 19 & 14 & 9 & 4 & -1 \\ 
+C & -25 & -11 & 1 & 14 & 14 & 22 & 17 & 12 \\ 
+G & -30 & -16 & -4 & 9 & 9 & 17 & 17 & 12 \\ 
+T & -35 & -21 & -9 & 4 & 5 & 12 & 26 & 21 \\ 
+A & -40 & -26 & -14 & -1 & 14 & 9 & 21 & 36 \\ 
+\end{tabular}
+$$
+
+$$
+R = \begin{tabular}{c|cccccccc}
+ & - & T & G & C & A & C & T & A \\\specialrule{1pt}{0pt}{0pt}
+- & X & B & B & B & B & B & B & B \\ 
+A & A & O & B & B & O & B & B & O \\ 
+T & A & O & B & B & A & A & O & B \\ 
+G & A & A & O & B & B & B & A & O \\ 
+C & A & A & A & O & B & O & B & B \\ 
+C & A & A & A & O & O & O & B & B \\ 
+G & A & A & O & A & O & A & O & O \\ 
+T & A & O & A & A & O & A & O & B \\ 
+A & A & A & A & A & O & B & A & O \\ 
+\end{tabular}
+$$
+
+Iz tih podataka lagano je napraviti rekonstrukciju i dobit ćemo da je poravnanje
+$A' = "ATGC\mbox{-}CGTA"$ i $B' = "\mbox{-}TGCAC\mbox{-}TA"$.
 
 \subsection{Analiza složenosti}
+Trivijalno je vidljivo da su memorijska i vremenska složenost opisanog algoritma 
+jednake $O(NM)$. 
+
+\section{Smith-Watermanov algoritam}
+\label{sec:swalg}
+Razlika njega i prethodno opisanog Needleman-Wunschevog algoritma jest u tome
+što ovaj algoritam traži najbolje lokalno poravnanje. To znači da ne koristi
+nužno cijele nizove proteina ili nukleotida već samo najsličnije uzastopne
+podnizove. U praksi se koriste nešto poboljšane verzije ovog algoritma.
+
+\subsection{Ulazni podaci}
+Vidi \autoref{subsec:nwinp}.
+
+\subsection{Izlazni podaci}
+Vidi \autoref{subsec:nwout}.
+
+\subsection{Algoritam}
+\label{subsec:swalg}
 
 
 \chapter{Algoritam simuliranog kaljenja}
