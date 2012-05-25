@@ -1,5 +1,8 @@
 \documentclass[times, utf8, zavrsni]{fer}
 \usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{colortbl}
+
 \usepackage{hyperref}
 \hypersetup{
 unicode=true, % za unicode podršku u bookmarkovima i sl., svakako postaviti na true
@@ -62,8 +65,6 @@ kome koristi, kako se može koristiti i potencijalno za što se sve može korist
 - cca 1-2 stranice
 
 \chapter{Smith-Watermanov algoritam}
-(cca 4-5 stranica)
-
 Smith-Watermanov algoritam služi nam da bismo pronašli lokalno poravnanje. 
 Osmislili su ga Temple F. Smith i Michael S. Waterman 1981. \cite{smithwaterman1981}.
 Temelji se na Needleman-Wunschevom algoritmu (\cite{needlemanwunsch1970})
@@ -90,14 +91,15 @@ u bioinformatici.
 \begin{enumerate}
 	\item Dva niza ($A$ i $B$) proteina ili nukleotida. Zbog jednostavnosti, pretpostavit
 		ćemo da su to nukleotidi iz DNK - adenin (A), timin (T), gvanin (G) i citozin (C).
-		U primjeru ćemo koristiti $A = "ATGCCGTA"$ i $B = "TGCACTA"$. Dužinu niza $A$ označit
-		ćemo s $N$, a dužinu niza $B$ s $M$. 
-	\item Matrica $S$, koja nam daje bodove koje dobijemo kada jedan nukletoid preklopimo
-		s drugim. U našem će slučaju imati dimenzije $4 \times 4$, budući da ćemo razmatrati
-		slučaj kada imamo samo četiri nukleotida. U principu će na dijagonali imati pozitivne
-		brojeve, a na ostalim poljima negativne. To znači da nam se najviše isplati 
-		preklapati nukletide istog tipa, jer za to dobivamo bodove, a inače
-		gubimo bodove. Primjer jedne takve matrice koju ćemo koristiti i u primjeru:
+		U primjeru ćemo koristiti $A = "ATGCCGTA"$ i $B = "TGCACTA"$. Dužinu niza $A$
+		označit ćemo s $N$, a dužinu niza $B$ s $M$. 
+	\item Supstitucijska matrica $S$, koja nam daje bodove koje dobijemo kada jedan
+		nukletoid preklopimo s drugim. U našem će slučaju imati
+		dimenzije $4 \times 4$, budući da ćemo razmatrati
+		slučaj kada imamo samo četiri nukleotida. U principu će na dijagonali
+		imati pozitivne brojeve, a na ostalim poljima negativne. To znači da nam
+		se najviše isplati preklapati nukletide istog tipa, jer za to dobivamo bodove,
+		a inače ih	gubimo. Primjer jedne takve matrice koju ćemo koristiti i u primjeru:
 		
 		$\begin{tabular}{c|cccc}
 		& A & C & G & T \\\specialrule{1pt}{0pt}{0pt}
@@ -156,17 +158,17 @@ i da nismo došli iz nikojeg polja (to vrijedi jedino za polje $F_{0,0}$), koris
 $$
 R_{i,j} = \left\{
 	\begin{array}{ll}
-		X & \mbox{ako vrijedi} \left( \begin{array}{l} i=0 \\ j=0 \end{array} \right) \\
-		O & \mbox{ako vrijedi} \left( \begin{array}{l} i>0 \\ j>0 \\
+		X & \mbox{ako je} \left( \begin{array}{l} i=0 \\ j=0 \end{array} \right) \\
+		O & \mbox{ako je} \left( \begin{array}{l} i>0 \\ j>0 \\
 				F_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \geq F_{i-1,j} + d \\
 				F_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \geq F_{i,j-1} + d \\
 			\end{array} \right) \\
-		A & \mbox{ako vrijedi} \left( \begin{array}{l} i>0 \\ j=0 \end{array} \right)
+		A & \mbox{ako je} \left( \begin{array}{l} i>0 \\ j=0 \end{array} \right)
 			\mbox{ili} \left( \begin{array}{l} i>0 \\ j>0 \\
 				F_{i-1,j} + d > F_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \\
 				F_{i-1,j} + d \geq F_{i,j-1} + d
 			\end{array} \right) \\
-		B & \mbox{ako vrijedi} \left( \begin{array}{l} i=0 \\ j>0 \end{array} \right)
+		B & \mbox{ako je} \left( \begin{array}{l} i=0 \\ j>0 \end{array} \right)
 			\mbox{ili} \left( \begin{array}{l} i>0 \\ j>0 \\
 				F_{i,j-1} + d > F_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \\
 				F_{i,j-1} + d > F_{i-1,j} + d
@@ -176,7 +178,8 @@ R_{i,j} = \left\{
 $$
 
 Rekonstrukciju provodimo tako krenemo iz polja $R_{N,M}$ i krećemo se
-po matrici unazad dok ne dođemo do polja $R_{0,0}$. Ako na polju pročitamo $O$,
+po matrici unazad dok ne dođemo do polja na kojem piđe $X$, tj. $R_{0,0}$.
+Ako na polju pročitamo $O$,
 pomičemo se po dijagonili, tj. u izlazni niz spremimo par $(A_{i-1}, B_{j-1})$ te
 smanjimo i $i$ i $j$. Ako pročitamo $A$, spremamo par $(A_{i-1}, -)$ te smanjimo
 samo $i$ za jedan. U slučaju da pročitamo $B$, spremamo par $(-, B_{j-1})$ te
@@ -186,37 +189,40 @@ smo izlazni niz, ali u obrnutom redosljedu.
 \subsection{Primjer}
 Za prethodno navedene ulazne podatke, matrice $F$ i $R$ izgledat će ovako:
 $$
-F = \begin{tabular}{c|cccccccc}
- & - & T & G & C & A & C & T & A \\\specialrule{1pt}{0pt}{0pt}
-- & 0 & -5 & -10 & -15 & -20 & -25 & -30 & -35 \\ 
-A & -5 & -1 & -6 & -11 & -5 & -10 & -15 & -20 \\ 
-T & -10 & 4 & -1 & -6 & -10 & -15 & -1 & -6 \\ 
-G & -15 & -1 & 11 & 6 & 1 & -4 & -6 & -6 \\ 
-C & -20 & -6 & 6 & 19 & 14 & 9 & 4 & -1 \\ 
-C & -25 & -11 & 1 & 14 & 14 & 22 & 17 & 12 \\ 
-G & -30 & -16 & -4 & 9 & 9 & 17 & 17 & 12 \\ 
-T & -35 & -21 & -9 & 4 & 5 & 12 & 26 & 21 \\ 
-A & -40 & -26 & -14 & -1 & 14 & 9 & 21 & 36 \\ 
+F =
+\begin{tabular}{c|cccccccc}
+ & - & T & G & C & A & C & T & A \\\specialrule{0.5pt}{0pt}{0pt}
+- & \cellcolor{lightgray} 0 & -5 & -10 & -15 & -20 & -25 & -30 & -35 \\ 
+A & \cellcolor{lightgray} -5 & -1 & -6 & -11 & -5 & -10 & -15 & -20 \\ 
+T & -10 & \cellcolor{lightgray} 4 & -1 & -6 & -10 & -15 & -1 & -6 \\ 
+G & -15 & -1 & \cellcolor{lightgray} 11 & 6 & 1 & -4 & -6 & -6 \\ 
+C & -20 & -6 & 6 & \cellcolor{lightgray} 19 & \cellcolor{lightgray} 14 & 9 & 4 & -1 \\ 
+C & -25 & -11 & 1 & 14 & 14 & \cellcolor{lightgray} 22 & 17 & 12 \\ 
+G & -30 & -16 & -4 & 9 & 9 & \cellcolor{lightgray} 17 & 17 & 12 \\ 
+T & -35 & -21 & -9 & 4 & 5 & 12 & \cellcolor{lightgray} 26 & 21 \\ 
+A & -40 & -26 & -14 & -1 & 14 & 9 & 21 & \cellcolor{lightgray} 36 \\ 
 \end{tabular}
 $$
 
 $$
-R = \begin{tabular}{c|cccccccc}
- & - & T & G & C & A & C & T & A \\\specialrule{1pt}{0pt}{0pt}
-- & X & B & B & B & B & B & B & B \\ 
-A & A & O & B & B & O & B & B & O \\ 
-T & A & O & B & B & A & A & O & B \\ 
-G & A & A & O & B & B & B & A & O \\ 
-C & A & A & A & O & B & O & B & B \\ 
-C & A & A & A & O & O & O & B & B \\ 
-G & A & A & O & A & O & A & O & O \\ 
-T & A & O & A & A & O & A & O & B \\ 
-A & A & A & A & A & O & B & A & O \\ 
+R =
+\begin{tabular}{c|cccccccc}
+ & - & T & G & C & A & C & T & A \\\specialrule{0.5pt}{0pt}{0pt}
+- & \cellcolor{lightgray} X & B & B & B & B & B & B & B \\ 
+A & \cellcolor{lightgray} A & O & B & B & O & B & B & O \\ 
+T & A & \cellcolor{lightgray} O & B & B & A & A & O & B \\ 
+G & A & A & \cellcolor{lightgray} O & B & B & B & A & O \\ 
+C & A & A & A & \cellcolor{lightgray} O & \cellcolor{lightgray} B & O & B & B \\ 
+C & A & A & A & O & O & \cellcolor{lightgray} O & B & B \\ 
+G & A & A & O & A & O & \cellcolor{lightgray} A & O & O \\ 
+T & A & O & A & A & O & A & \cellcolor{lightgray} O & B \\ 
+A & A & A & A & A & O & B & A & \cellcolor{lightgray} O \\ 
 \end{tabular}
 $$
 
-Iz tih podataka lagano je napraviti rekonstrukciju i dobit ćemo da je poravnanje
-$A' = "ATGC\mbox{-}CGTA"$ i $B' = "\mbox{-}TGCAC\mbox{-}TA"$.
+Iz tih podataka lagano je napraviti rekonstrukciju (polja označena sivom
+bojom). Stoga zaključujemo da je traženo globlano poravnanje
+$A' = \mbox{"ATGCCGTA"}$ i $B' = \mbox{"-TGCACTA"}$.
 
 \subsection{Analiza složenosti}
 Trivijalno je vidljivo da su memorijska i vremenska složenost opisanog algoritma 
@@ -237,6 +243,174 @@ Vidi \autoref{subsec:nwout}.
 
 \subsection{Algoritam}
 \label{subsec:swalg}
+U ovom ćemo algoritmu koristiti matricu $H$ za računanje poravnanja.
+Za razliku od Needleman-Wunschevog algoritma, $H_{i,j}$ ovaj će put
+označavati rezultat
+najboljeg lokalnog poravnanja koje koristi $A_{i-1}$ i $B_{j-1}$.
+Matricu ćemo popuniti na slijedeći način:
+
+$$
+H_{i,j} =
+\left\{ \begin{array}{ll}
+	0 & \mbox{ako je } i=0 \mbox{ ili } j=0 \\
+	max \left( \begin{array}{l}
+		0 \\
+		H_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \\
+		H_{i-1, j} + d \\
+		H_{i, j-1} + d
+	\end{array} \right) & \mbox{ako je } i>0 \mbox{ i } j>0
+\end{array} \right.
+$$
+
+Primjetite bitnu razliku u odnosu na Needleman-Wunschev algoritam - u ovom
+slučaju matrica $H$ neće sadržavati negativne brojeve. Rješenje, tj. najbolje
+lokalno poravnanje više neće pisati na polju $H_{N, M}$. Ono će biti na polju 
+$(t, u)$ na kojem se nalazi najveći broj u matrici.
+
+Da bismo znali rekonstruirati takvo lokalno poravnanje, koristit ćemo matricu
+$R$ koju gradimo na sličan način kao i kod prethodnog algoritma:
+
+$$
+R_{i,j} =  \left\{
+	\begin{array}{ll}
+		X & \mbox{ako je} H_{i,j}=0 \\
+		O & \mbox{ako je} \left( \begin{array}{l} i>0 \\ j>0 \\
+				H_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \geq H_{i-1,j} + d \\
+				H_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \geq H_{i,j-1} + d \\
+			\end{array} \right) \\
+		A & \mbox{ako je} \left( \begin{array}{l} i>0 \\ j=0 \end{array} \right)
+			\mbox{ili} \left( \begin{array}{l} i>0 \\ j>0 \\
+				H_{i-1,j} + d > H_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \\
+				H_{i-1,j} + d \geq H_{i,j-1} + d
+			\end{array} \right) \\
+		B & \mbox{ako je} \left( \begin{array}{l} i=0 \\ j>0 \end{array} \right)
+			\mbox{ili} \left( \begin{array}{l} i>0 \\ j>0 \\
+				H_{i,j-1} + d > H_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \\
+				H_{i,j-1} + d > H_{i-1,j} + d
+			\end{array} \right) \\
+	\end{array}
+\right.
+$$
+
+Rekonstrukcija se, slično kao i kod Needleman-Wunschevog algoritma,
+izvodi tako da krenemo iz polja $(t, u)$ i krećemo se  po matrici $R$ dok
+ne dođemo do polja na kojem piše $X$ koje ovaj put ne mora nužno biti 
+polje $R_{0,0}$. Dobiveni niz okrenemo i dobit ćemo traženo poravnanje.
+
+\subsection{Primjer}
+Za prethodno navedene ulazne podatke, matrice $H$ i $R$ izgledat će ovako:
+
+$$
+H =
+\begin{tabular}{c|cccccccc}
+ & - & T & G & C & A & C & T & A \\\specialrule{1pt}{0pt}{0pt}
+- & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ 
+A & \cellcolor{lightgray} 0 & 0 & 0 & 0 & 10 & 5 & 0 & 10 \\ 
+T & 0 & \cellcolor{lightgray} 9 & 4 & 0 & 5 & 0 & 14 & 9 \\ 
+G & 0 & 4 & \cellcolor{lightgray} 16 & 11 & 6 & 1 & 9 & 9 \\ 
+C & 0 & 0 & 11 & \cellcolor{lightgray} 24 & \cellcolor{lightgray} 19 & 14 & 9 & 4 \\ 
+C & 0 & 0 & 6 & 19 & 19 & \cellcolor{lightgray} 27 & 22 & 17 \\ 
+G & 0 & 0 & 7 & 14 & 14 & \cellcolor{lightgray} 22 & 22 & 17 \\ 
+T & 0 & 9 & 4 & 9 & 10 & 17 & \cellcolor{lightgray} 31 & 26 \\ 
+A & 0 & 4 & 0 & 4 & 19 & 14 & 26 & \cellcolor{lightgray} 41 \\ 
+\end{tabular}
+$$
+
+$$
+R =
+\begin{tabular}{c|cccccccc}
+ & - & T & G & C & A & C & T & A \\\specialrule{1pt}{0pt}{0pt}
+- & X & X & X & X & X & X & X & X \\ 
+A & \cellcolor{lightgray} X & X & X & X & O & B & B & O \\ 
+T & X & \cellcolor{lightgray} O & B & X & A & A & O & B \\ 
+G & X & A & \cellcolor{lightgray} O & B & B & O & A & O \\ 
+C & X & X & A & \cellcolor{lightgray} O & \cellcolor{lightgray} B & O & B & O \\ 
+C & X & X & A & O & O & \cellcolor{lightgray} O & B & B \\ 
+G & X & X & O & A & O & \cellcolor{lightgray} A & O & O \\ 
+T & X & O & B & A & O & A & \cellcolor{lightgray} O & B \\ 
+A & X & A & O & A & O & B & A & \cellcolor{lightgray} O \\ 
+\end{tabular}
+$$
+
+Prema tome, traženo poravnanje jest $A' = \mbox{"TGC-CGTA"}$ i
+$B' = \mbox{"TGCAC-TA"}$.
+
+\subsection{Analiza složenosti}
+Trivijalno je vidljivo da su memorijska i vremenska složenost i ovog algoritma 
+jednake $O(NM)$. 
+
+
+\section{Procjepi}
+Do sada smo razmatrali samo slučaj kada je cijena otvaranja procjepa i
+njegova proširivanja jednaka ($d$). Taj slučaj nazivamo
+\textit{linearnom ocjenom procjepa},
+budući da, ako je $k$ dužina procjepa, $dk$ je cijena za taj procjep. 
+U praksi se primjenjuju još dva načina ocjenjivana procjepa.
+
+Jedan je da za svaki procjep, bez obzira na njegovu dužinu, platimo fiksnu
+cijenu ($c$), a nazivamo ga \textit{konstantnom ocjenom procjepa}. 
+
+Drugi je kombinacija prethodna dva načina: za svaki procjep plaćamo fiksnu
+cijenu ($c$), ali za njegovo produženje plaćamo neku drugu cijenu ($d$).
+Takvu funkciju ocjene procjepa nazivamo \textit{Afinom ocjenom procjepa}.
+Prema tome, za procjep dužine $k$, platit ćem cijenu jednaku $c + (k-1)d$.
+Kako je empirijski pokazano da je ta funkcija u biti parobala, ovakva je
+ocjena ujedno i najpreciznija. Nažalost, ona otežava računanje matrice
+$H$ (i $R$). Problem je najlakše riješiti tako da uvedemo dvije nove
+matrice $H^A$ i $H^B$ koje će nam pomoći u računanju cijene procjepa.
+Matrice ćemo onda računati na slijedeći način:
+
+$$
+H_{i,j} =
+\left\{ \begin{array}{ll}
+	0 & \mbox{ako je } i=0 \mbox{ ili } j=0 \\
+	max \left( \begin{array}{l}
+		0 \\
+		H_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \\
+		H^A_{i-1, j} + c \\
+		H^B_{i, j-1} + c
+	\end{array} \right) & \mbox{ako je } i>0 \mbox{ i } j>0
+\end{array} \right.
+$$
+
+$$
+H^{A}_{i,j} =
+\left\{ \begin{array}{ll}
+	0 & \mbox{ako je } i=0 \mbox{ ili } j=0 \\
+	max \left( \begin{array}{l}
+		0 \\
+		H_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \\
+		H^A_{i-1, j} + d \\
+		H^B_{i, j-1} + c
+	\end{array} \right) & \mbox{ako je } i>0 \mbox{ i } j>0
+\end{array} \right.
+$$
+
+$$
+H^{B}_{i,j} =
+\left\{ \begin{array}{ll}
+	0 & \mbox{ako je } i=0 \mbox{ ili } j=0 \\
+	max \left( \begin{array}{l}
+		0 \\
+		H_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \\
+		H^A_{i-1, j} + c \\
+		H^B_{i, j-1} + d
+	\end{array} \right) & \mbox{ako je } i>0 \mbox{ i } j>0
+\end{array} \right.
+$$
+
+Rekonstrukcijska matrica vrlo je slična onoj u izvorno opisanom
+algoritmu, a kako ćemo u udućem potpoglavlju maknuti potrebu za njom,
+nećemo je posebno navoditi. 
+
+\section{Memorijska optimizacija}
+
+\section{Substitucija substitucijske matrice}
+- TODO: neko bolje ime za ovo potopoglavlje
+U ovom ćemo radu umjesto supstitucijske matrice za usporedbu dva elementa
+koristiti fizičku udaljenost između dva atoma. Stoga će nizovi A i B biti
+zapravo nizovi koordinata iz kojih ćemo moći za svaki par elemenata
+izračunati koordinate. 
 
 
 \chapter{Algoritam simuliranog kaljenja}
