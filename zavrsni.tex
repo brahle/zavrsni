@@ -2,7 +2,6 @@
 \usepackage{booktabs}
 \usepackage{xcolor}
 \usepackage{colortbl}
-
 \usepackage{hyperref}
 \hypersetup{
 unicode=true, % za unicode podršku u bookmarkovima i sl., svakako postaviti na true
@@ -253,7 +252,7 @@ $$
 H_{i,j} =
 \left\{ \begin{array}{ll}
 	0 & \mbox{ako je } i=0 \mbox{ ili } j=0 \\
-	max \left( \begin{array}{l}
+	\max \left( \begin{array}{l}
 		0 \\
 		H_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \\
 		H_{i-1, j} + d \\
@@ -364,7 +363,7 @@ $$
 H_{i,j} =
 \left\{ \begin{array}{ll}
 	0 & \mbox{ako je } i=0 \mbox{ ili } j=0 \\
-	max \left( \begin{array}{l}
+	\max \left( \begin{array}{l}
 		0 \\
 		H_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \\
 		H^A_{i-1, j} + c \\
@@ -377,7 +376,7 @@ $$
 H^{A}_{i,j} =
 \left\{ \begin{array}{ll}
 	0 & \mbox{ako je } i=0 \mbox{ ili } j=0 \\
-	max \left( \begin{array}{l}
+	\max \left( \begin{array}{l}
 		0 \\
 		H_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \\
 		H^A_{i-1, j} + d \\
@@ -390,7 +389,7 @@ $$
 H^{B}_{i,j} =
 \left\{ \begin{array}{ll}
 	0 & \mbox{ako je } i=0 \mbox{ ili } j=0 \\
-	max \left( \begin{array}{l}
+	\max \left( \begin{array}{l}
 		0 \\
 		H_{i-1,j-1} + S_{A_{i-1}, B_{j-1}} \\
 		H^A_{i-1, j} + c \\
@@ -404,9 +403,82 @@ algoritmu, a kako ćemo u udućem potpoglavlju maknuti potrebu za njom,
 nećemo je posebno navoditi. 
 
 \section{Memorijska optimizacija}
+S obzirom da nizovi nukleotida mogu sadržavati i do nekoliko milijuna
+elemenata, matrica dimenzija $N M$ fizički ne stane u memoriju. 
+Međutim, čim primjetimo da za potrebe generiranja matrice $H$ (a ujedno i
+$H^A$ odnosno $H^B$) koristimo
+samo polja iz trenutnog i prethodnog retka, postaje jasno da nam ostali 
+reci koje smo obradili ranije njih nisu potrebni. Stoga možemo pamtiti 
+samo ta dva retka i time korištenu memoriju za proračun
+matrice $H$ smanjimo na samo $O(\min(N, M))$. Ipak, problem se javlja
+kada trebamo rekonstruirati rješenje pomoću matrice $R$, budući da
+se prilikom rekonstrukcije potencijalno vraćamo se kroz sva njena polja. U
+nastavku ćemo opisati rješenje tog problema.
+
+-TODO: slika koja prikazuje da možemo koristiti samo dva posljednja retka
+
+\subsection{Hirschbergov algoritam}
+Dan Hirschberg osmislio je algoritam koji rješava problem rekonstrukcije
+globalnog poravnanja u $O(NM)$ vremena koristeći $O(\min(N, M))$ memorije.
+Njegova ideja temeljena je na metodi \textit{podijeli-pa-vladaj}.
+
+No, prije nego je objasnimo, promotrimo što će se dogoditi s globalnim
+poravnanjem ako okrenemo nizove $A$ i $B$. Okrenute nizove nazivat ćemo
+$A^R$ i $B^R$, a matrice $F^R$ i $R^R$. Očito je da se ocjena poravnanja
+neće  promijeniti, a prilikom rekonstrukcije dobit ćemo obrnuti niz. Uz sitne
+modifikacije, možemo izračunati matricu $F^R$ bez da fizički okrećemo
+nizove. 
+
+Hirschbergov algoritam radi na slijedeći način:
+\begin{enumerate}
+\item
+Bez smanjenja općenitosti, možemo pretpostaviti da je niz $A$ duži od
+niza $B$. Neka nam $p$ označava polovicu dužine niza $A$, zaokruženu na dolje.
+Podijelimo niz $A$ na dvije polovice, dužine $p$.
+
+\item
+Na obje polovice niza ($A_{0..p}$ i $A_{p..N}$) pokrenemo gore opisani algoritam
+za pronalaženje
+lokalnog poravnanja koje koristi $O(\min(N,M))$ memorije, ali bez
+rekonstrukcije. Nad drugom polovicom niza radimo algoritam za obrnuto
+nizove, tako da je za obje polovice posljednji izračunati red onaj odabran u
+prethodnom koraku. 
+
+\item
+Definirajmo funkciju $\phi(j)$ kao sumu lokalnih poravnanja obje matrice u redu
+$p$, tj. kao:
+$$ \phi(j) = F_{p,j} + F^{R}_{p,j} $$
+Barem će jedan član globalnog poravnanja, biti u retku $p$, a Hirschberg
+je pokazao da će to biti onaj u stupcu $j$ za kojeg je $\phi(j)$ najveći.
+Time smo pronašli jedan član koji je sigurno u globalnom poravnanju.
+
+\item
+S obzirom na svojstva globalnog poravnanja, intuitivno je jasno da
+polja koja se nalaze gore-desno i dolje-lijevo od pronađenog polja 
+sigurno nisu u točnom globalnom poravnanju, stoga ta polja
+možemo izbaciti iz daljnjeg razmatranja. Ako rekurzivno primjenimo
+algoritam na parove podnizova $A_{0..p}$ i $B_{0,j}$ te $A_{p..N}$ i
+$B_{j..M}$, možemo ponavljajući postupak napraviti rekonstrukciju
+cijelog niza.
+\end{enumerate}
+
+Ono što možda nije jasno jest vremenska složenost gore opisanog algoritma.
+Pokazuje se da pri odbacivanju polja odbacimo u pravlu polovicu trenutno
+razmatranih polja. Prema tome, broj operacija koje napravimo možemo napisati
+u obliku geometrijskog niza:
+$$ NM + NM/2 + NM/4 + ... < 2 NM \in O(NM) $$
+Time dolazimo do zaključka da je složenost i dalje ostala jednaka do
+razlike u konstantni, ali je znanto smanjena količina iskorištene
+memorije, stoga se ova ušteda isplatiti koristiti.
+
+
+
+- TODO: slike svih koraka
+
 
 \section{Substitucija substitucijske matrice}
-- TODO: neko bolje ime za ovo potopoglavlje
+- TODO: neko bolje ime za ovo potpoglavlje
+
 U ovom ćemo radu umjesto supstitucijske matrice za usporedbu dva elementa
 koristiti fizičku udaljenost između dva atoma. Stoga će nizovi A i B biti
 zapravo nizovi koordinata iz kojih ćemo moći za svaki par elemenata
