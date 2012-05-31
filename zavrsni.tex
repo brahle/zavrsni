@@ -1,5 +1,7 @@
 \documentclass[times, utf8, zavrsni]{fer}
 \usepackage{booktabs}
+\usepackage{pgf,tikz}
+\usetikzlibrary{arrows}
 \usepackage{xcolor}
 \usepackage{colortbl}
 \usepackage{hyperref}
@@ -484,22 +486,254 @@ koristiti fizičku udaljenost između dva atoma. Stoga će nizovi A i B biti
 zapravo nizovi koordinata iz kojih ćemo moći za svaki par elemenata
 izračunati koordinate. 
 
+Neka nam $d$ označava udaljenost između dva atoma, a $d_0$ neka nam
+je konstanta (recimo $d_0 = 10$). Tada ćemo im udaljenost ocijeniti s
+$e^{d/d_0}$. 
+
 
 \chapter{Algoritam simuliranog kaljenja}
-- objasni i zašto si uzeo više nizova odjednom, kako od njih biraš najboljeg i slično.
-- cca 4 starnice
+Algoritam simuliranog kaljenja generička je metoda bazirana na vjerojatnosti koja
+traži ekstrem neke funkcije u velikom prostoru traženja. Zbog toga što nam ne
+garantira da će pronaći najbolje rješenje, obično se koristi kada nam je
+želimo dobiti rješenje koje je prihvatljivo u relativno kratkom
+vremenu.
+
+Inspiracija za algoritam dolazi iz metalurgije. Metali se prvo grubo obrađuju
+na visokoj temperaturi, a, kako se hlade, tako obrada postaje sve finija
+i  finija. Drugim riječima, \textit{željezo se kuje dok je vruće}. 
+Taj proces pokušavamo simulirati u ovom algoritmu.
+
+\section{Algoritam}
+Uvedimo nekoliko definicija:
+\begin{itemize}
+\item $S$ - trenutno stanje.
+
+\item $S'$ - stanje koje je susjedno trenutnom.
+
+\item $E(s)$ - funkcija koja računa energiju nekog stanja. Želimo pronaći
+stanje s najmanjom (ili najvećom) energijom. 
+
+\item $S_{n}$ - najbolje pronađeno stanje, tj. stanje u kojem je 
+energija najmanja.
+
+\item $e$ - energija trenutnog stanja, tj. $E(S)$.
+
+\item $t$ - vrijeme proteklo od početka pokusa. 
+
+\item $T$ - trenutna temperatura. Definiramo je kao $T_0 T_1^{t}$, gdje je
+$T_0$ početna temperatura, a $T_1$ faktor koji govori koliko se temperatura
+brzo smanjuje. 
+
+\item $P(e, e', T)$ - vjerojatnost da prijeđemo u stanje koje ima energiju
+$e'$ iz stanja koje ima energiju $e$ u trenutku $T$. 
+\end{itemize}
+
+Algoritam se sastoji od ponavljanja slijedećeg niza operacija
+dok nismo dobili stanje koje ima traženu energiju ili dok vrijeme nije isteklo.
+
+\begin{enumerate}
+\item
+Odaberi stanje $S'$ koje je susjedno stanju $S$. 
+
+\item
+Izračnaj energiju novog stanja $e' = E(S')$. 
+
+\item 
+Provjeri ima li novo stanje veću energiju od najboljeg do sada pronađenog stanja.
+Ako ima, onda je $S_n = S'$.
+
+\item
+Izračunaj vjerojatnost napredovanja u stanje $S'$: $p = P(e, e', T)$. 
+
+\item
+Odaberi nasumičan broj iz intervala $[0, 1]$ i ako je manji od $p$, 
+pomakni trenutno stanje u $S'$. 
+
+\item 
+Povećaj vrijeme $t$. 
+
+\end{enumerate}
+
+\subsection{Odabir susjeda}
+U našem slučaju, odabir susjeda radimo tako uzmemo koordinate atoma te
+im translatiramo sve tri koordinati, a cijeli niz potom rotiramo oko sve tri
+osi. Time smo osigurali da možemo konstruirati bilo koji drugi izomorfan niz u
+prostoru.
+
+Da bismo bili sigurni da ne radimo prevelike skokove, svaka translacija
+ili rotacija događa se u određenom intervalu, to jest,
+nećemo raditi translacije koje za više od $x$ niti rotacije za više od
+$\alpha$ stupnjeva.
+
+- slika koja prikazuje pomak po kutevima
+
+\definecolor{qqqqff}{rgb}{0,0,1}
+\begin{tikzpicture}[line cap=round,line join=round,>=triangle 45,x=1.0cm,y=1.0cm]
+\clip(0.71,-1.14) rectangle (6.10,2.76);
+\draw (1,1)-- (4,2)-- (6,0);
+\draw (0.81,1.16)-- (3.59,2.66)-- (5.91,1.04);
+\draw (1.16,0.81)-- (4.29,1.28)-- (5.91,-1.04);
+\begin{scriptsize}
+\fill [color=qqqqff] (1,1) circle (1.5pt);
+\draw[color=qqqqff] (1.04,1.08) node {$A$};
+\fill [color=qqqqff] (4,2) circle (1.5pt);
+\draw[color=qqqqff] (4.04,2.08) node {$B$};
+\fill [color=qqqqff] (6,0) circle (1.5pt);
+\draw[color=qqqqff] (6.04,0.07) node {$C$};
+\end{scriptsize}
+\end{tikzpicture}
+
+- slika koja prikazuje pomak po koordinatama
+
+\definecolor{zzttqq}{rgb}{0.6,0.2,0}
+\definecolor{qqqqff}{rgb}{0,0,1}
+\begin{tikzpicture}[line cap=round,line join=round,>=triangle 45,x=1.0cm,y=1.0cm]
+\clip(-1.10,-3.10) rectangle (7.10,5.10);
+\fill[color=zzttqq,fill=zzttqq,fill opacity=0.1] (0,4) -- (0,-2) -- (2,-2) -- (5,-3) -- (7,-3) -- (7,3) -- (5,5) -- (3.5,4.5) -- (3,5) -- cycle;
+\draw (1,1)-- (4,2)-- (6,0);
+\draw (0,-2)-- (3,-1)-- (5,-3);
+\draw (2,4)-- (5,5)-- (7,3);
+\draw (0,4)-- (3,5)-- (5,3);
+\draw (2,-2)-- (5,-1)-- (7,-3);
+\draw [color=zzttqq] (0,4)-- (0,-2);
+\draw [color=zzttqq] (0,-2)-- (2,-2);
+\draw [color=zzttqq] (2,-2)-- (5,-3);
+\draw [color=zzttqq] (5,-3)-- (7,-3);
+\draw [color=zzttqq] (7,-3)-- (7,3);
+\draw [color=zzttqq] (7,3)-- (5,5);
+\draw [color=zzttqq] (5,5)-- (3.5,4.5);
+\draw [color=zzttqq] (3.5,4.5)-- (3,5);
+\draw [color=zzttqq] (3,5)-- (0,4);
+\begin{scriptsize}
+\fill [color=qqqqff] (1,1) circle (1.5pt);
+\draw[color=qqqqff] (1.08,1.15) node {$A$};
+\fill [color=qqqqff] (4,2) circle (1.5pt);
+\draw[color=qqqqff] (4.09,2.15) node {$B$};
+\fill [color=qqqqff] (6,0) circle (1.5pt);
+\draw[color=qqqqff] (6.08,0.16) node {$C$};
+\end{scriptsize}
+\end{tikzpicture}
+
+\subsection{Računanje energije}
+Za račuanje energije, koristimo prethodno opisani Smith-Waterman algoritam. 
+Jedan ulazni niz je onaj koji želimo dobiti transformacijama, dok je drugi
+onaj za kojeg računamo energiju. 
+Budući da nam rekonstrukcija nije potrebna jer nas zanima samo energija,
+nju niti ne računamo. Time ćemo dobiti ubrzanje od nekoliko puta.
+
+
+\subsection{Računanje vjerojatnosti prihvaćanja}
+Rješavanje ovog problema srž je algoritma simuliranog kaljenja. 
+Jasno je da želimo otići u stanje koje ima bolju energiju, pa
+će nam ova funkcija kada je nova energija veća od trenutne, uvijek
+vratiti $1$, što znači da ćemo sigurno otići u to stanje. 
+Ono što razlikuje ovaj algoritam od klasičnog algoritma
+\textit{penjanja na brdo} (engl. \textit{hill-climbing}) jest 
+ponašanje u slučaju da je nova energija manja od trenutne. 
+
+Simulirano kaljenje, kao što je već rečeno, ponekad ode i u lošija
+stanja. Hoće li se to dogoditi, ovisi o implementaciji funkcije
+$P$. Kako nam inspiracija dolazi iz obrade metala, vjerojatnost da
+prihvatimo loše stanje veća je na početku nego pri kraju. Također,
+ako je rješenje puno lošije, ne isplati nam ga se prihvatiti kao
+trenutno. 
+
+Razmotrimo način na koji možemo modelirati vrijeme. Pretpostavimo
+da nam $q$ označava trenutnu vrijednost funkcije $P$. Također,
+uvedimo ograničenje da $q$ mora biti iz intervala $[0, 1]$.
+Želimo, dakle, da $P$ pada kako vrijeme odmiče. Najjednostavnije
+što možemo napraviti jest da od $q$ oduzmemo $t$. Međutim,
+kako $P$ mora biti u granicama $[0, 1]$ to nije dobro rješenje.
+Alternativno, ako oduzmemo $t/t_max$, dobili smo rješenje koje
+je potencijalno u intervalu $[-1, 1]$ i linearno pada
+ako mijenjamo samo vrijeme. Pokazalo se, međutim, da u "prirodi"
+nije baš tako. Vjerojatnost, naime, pada eksponencijalno. 
+
+Slično razmišljanje vrijedi i za modeliranje razlike u energiji.
+Što je razlika veća, to nam vjerojatnost prijelaza treba biti manja.
+
+Obično se uzima slijedeća funkcija: 
+$$
+P(e, e', T) = 
+\left\{ \begin{array}{ll}
+	1 & \mbox{ako je } e' > e \\
+	\frac{1}{1+\exp \frac{e'-e}{T}} & \mbox{inače}
+\end{array} \right.
+$$
+%TODO povećaj font u ovoj jednadžbi.
+
+Primjetite da se, umjesto vremena, u njoj govori o temperaturi,
+koja eksponencijalno pada kako vrijeme odmiče. 
+
+U nastavku je dan graf funkcije $P(\Delta e, T)$, gdje je $\Delta = e'-e$. Os
+$x$ predstavlja $\Delta e$, os $y$ je $T$ (bitno je ponoviti da
+vremenom ova vrijednost pada) te os $z$ prikazuje vrijednost $P$. 
+S obzirom da 3D graf prikazujemo na 2D površini, pobojali smo ga
+u gradijent s obzirom na njegovu vrijenost kako bismo ga lakše 
+razumjeli. 
+
+% preuzeto s https://www.google.hr/search?hl=en&biw=1857&bih=995&noj=1&sclient=psy-ab&q=1%2F%281%2Be%5E%28x%2Fy%29%29&oq=1%2F%281%2Be%5E%28x%2Fy%29%29&aq=f&aqi=&aql=&gs_l=serp.3...274395.277370.0.277780.6.6.0.0.0.0.176.515.5j1.6.0...0.0.h3zpB1qjAkE
+\includegraphics{res/P_graf_de(0_100)_t(1,100).PNG}
+
+\section{Modifikacije}
+
+Ovaj algoritam smo nešto prilagodili našoj upotrebi, kako bismo dobili
+prihvatljivo rješenje što je moguće prije. Budući da je cijeli
+algoritam baziran na heuristici, a izmjene koje smo napravili
+ne utječu na točnost, smijemo ih koristiti jer jedina stvar
+na što utječu su brzina algoritma. 
+
+\subsection{Više susjeda}
+Klasičan algoritam, kako je to gore objašnjeno, koristi samo jedan susjed u svakom
+koraku. Mi ćemo u našem rješenju koristiti više ($k$) njih. Od tako dobivenih,
+uzimamo onaj koji je najbolji i uspoređujemo ga, kako je gore opisano,
+s trenutnim stanjem. 
+
+%TODO
+- slika: bar chart od 20 energija, označena najbolja, sa strane trenutno stanje i
+najbolje do sada
+
+S obzirom da nam je svaki korak ocjenjivanja relativno skup, time se možemo
+osigurati rijetko odlazimo u slabija stanja. Međutim, takav pohlepan
+način odabira može nas dovesti u stanje lokalnog minimuma, iz kojeg se nećemo
+izvući. Da bismo pokušali otkloniti taj problem, u 10\% genirirat ćemo samo jednog
+susjeda u kojeg ćemo se, ako zadovljava uvjete, proširiti. 
+
+Također, pokazat će se u nastavku, ovime možemo nešto uštedjeti i na korištenju
+memorije i time povećati efikasnost koju dobijemo kada koristimo grafički
+procesor za računanje traženih podataka. 
+
+\subsection{Ponovo pokretanje}
+
+Jedna od metoda da se izvučemo iz potencijalnog lokalnog ekstrema jest da
+ponovo pokrenemo algoritam iz neke prethodne točke. Često se to implementira
+na način da se promijeni vrijeme (smanji se, tj. postavi se u prošlost).
+Time se poveća vjerojatnost da izađemo iz nekog lokalnog ekstrema koristeći
+neka lošija stanja. 
+
+U slučaju da se najbolje rješenje nije promjenilo u zadnjih 15 koraka, 
+vrijeme ćemo resetirati da bismo se pokušali pomaknuti iz mogućeg lokalnog
+ekstrema. 
+
+\section{Parametari}
+
+S obzirom da naglasak ovog rada nije bio isključivo na ovom algoritmu, 
+a i na vremenske rokove postavljene na pisanje rada, parametri koji su se
+koristili u implementaciji nisu previše istraženi. 
+
 
 \chapter{CUDA tehnologija}
 - cca 2 stranice
-
 - prednosti i mane, problemi i rjesenja
 
 \chapter{Implementacija}
 - cca 5 stranica
 
-- kako je sve spojeno
+\section{Smith-Waterman}
 
+- kako je sve spojeno
 - detalji implementacije - koje funkcije ocjene sam koristio, kako sam došao do njih
+- 
 
 \chapter{Rezultati}
 - cca 1-2 starnice
