@@ -1,0 +1,8 @@
+Kako maknuti kvadratnu memorijsku slozenost unutar svakog grida:
+
+- racunam po sporednim dijagonalama
+- pamtim samo zadnje dvije dijagonale
+- zapravo, ako ovo koristim, gridovi mi niti ne trebaju
+
+- koristim, dakle, samo dva niza. Mogu potom na njima
+pozvati reduce da saznam maksimum. :D

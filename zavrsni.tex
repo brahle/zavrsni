@@ -166,10 +166,11 @@ Inovativnost ovog rada temelji se na tome da ćemo kao arhitekturu
 koristi GPU, tj. grafičku procesnu jedinicu. Prednost GPU arhitekture
 u odnosu na CPU jest to što je GPU masivno paralelan, što znači
 da imamo velik broj dretvi (broje se u stotinama!) koje nam omogućavaju
-da stvari rješavamo paralelno. 
-
-
-
+da stvari rješavamo paralelno. Najzrelija tehnologija koja nudi
+korištenje grafičkih kartica u svrhu procesiranja podataka je CUDA.
+Unatoč nekim ograničenjima (npr. radi samo na Nvidijinim grafičkim
+karticama), odlučili smo koristiti upravo nju za potrebe implementacije
+rješenja ovog problema. 
 
 - detaljan opis problema
 - cca 1-2 stranice
@@ -597,7 +598,7 @@ izračunati koordinate.
 
 Neka nam $d$ označava udaljenost između dva atoma, a $d_0$ neka nam
 je konstanta (recimo $d_0 = 10$). Tada ćemo im udaljenost ocijeniti s
-$e^{d/d_0}$. 
+$30-e^{d/d_0}$. 
 
 
 \chapter{Algoritam simuliranog kaljenja}
@@ -611,6 +612,9 @@ Inspiracija za algoritam dolazi iz metalurgije. Metali se prvo grubo obrađuju
 na visokoj temperaturi, a, kako se hlade, tako obrada postaje sve finija
 i  finija. Drugim riječima, \textit{željezo se kuje dok je vruće}. 
 Taj proces pokušavamo simulirati u ovom algoritmu.
+
+%preuzeto s http://www.flickr.com/photos/beginasyouare/6121659469/sizes/l/in/photostream/
+\includegraphics{res/Kovanje_zeljeza_l.jpg}
 
 \section{Algoritam}
 Uvedimo nekoliko definicija:
@@ -773,12 +777,12 @@ $$
 Primjetite da se, umjesto vremena, u njoj govori o temperaturi,
 koja eksponencijalno pada kako vrijeme odmiče. 
 
-U nastavku je dan graf funkcije $P(\Delta e, T)$, gdje je $\Delta = e'-e$. Os
+U nastavku je dan graf funkcije $P(\Delta e, T)$, gdje je $\Delta e = e'-e$. Os
 $x$ predstavlja $\Delta e$, os $y$ je $T$ (bitno je ponoviti da
 vremenom ova vrijednost pada) te os $z$ prikazuje vrijednost $P$. 
-S obzirom da 3D graf prikazujemo na 2D površini, pobojali smo ga
-u gradijent s obzirom na njegovu vrijenost kako bismo ga lakše 
-razumjeli. 
+Budući da 3D graf prikazujemo na 2D površini, pobojali smo ga
+u gradijent s obzirom na njegovu vrijednost kako bismo ga lakše 
+interpretirali. 
 
 % preuzeto s https://www.google.hr/search?hl=en&biw=1857&bih=995&noj=1&sclient=psy-ab&q=1%2F%281%2Be%5E%28x%2Fy%29%29&oq=1%2F%281%2Be%5E%28x%2Fy%29%29&aq=f&aqi=&aql=&gs_l=serp.3...274395.277370.0.277780.6.6.0.0.0.0.176.515.5j1.6.0...0.0.h3zpB1qjAkE
 \includegraphics{res/P_graf_de(0_100)_t(1,100).PNG}
@@ -797,9 +801,8 @@ koraku. Mi ćemo u našem rješenju koristiti više ($k$) njih. Od tako dobiveni
 uzimamo onaj koji je najbolji i uspoređujemo ga, kako je gore opisano,
 s trenutnim stanjem. 
 
-%TODO
-- slika: bar chart od 20 energija, označena najbolja, sa strane trenutno stanje i
-najbolje do sada
+%TODO opis slike
+\includegraphics[scale=0.4]{res/energije_susjeda.png}
 
 S obzirom da nam je svaki korak ocjenjivanja relativno skup, time se možemo
 osigurati rijetko odlazimo u slabija stanja. Međutim, takav pohlepan
@@ -830,24 +833,253 @@ a i na vremenske rokove postavljene na pisanje rada, parametri koji su se
 koristili u implementaciji nisu previše istraženi. 
 
 
+
+
+
+
 \chapter{CUDA tehnologija}
-- cca 2 stranice
-- prednosti i mane, problemi i rjesenja
+\textit{Compute Unified Device Architecture} (engl.; računski objedinjena
+arhitektura uređaja) ili skraćeno CUDA, tehnologija je
+koja nam omogućuje da upregnemo moć grafičkih čipova na
+problemima za koje se tipično koristio CPU (odnosno procesor).
+Kopanija Nvidija razvila ju je za svoje grafičke kartice. 
+
+Prva verzija CUDA-inog SDK-a (engl. \textit{\textbf{s}oftware
+\textbf{d}evelopment \textbf{k}it} - oprema za razvoj programske
+podrške) izdana je 15. veljače 2007.
+Ona je omogućila korištenje resursa grafičkih kartica jedino u
+programskom jeziku C. Od tada do danas izdane su još dvije velike
+iteracije i nekoliko manjih te danas možemo koristiti i podskup
+jezika C++. Osim službenog SDK-a, za čitav niz programskih jezika,
+poput Fortrana, Jave, Haskella, Perla, Pythona, Matlaba, napisane su
+neslužbene poveznice. 
+
+%% preuzeto s http://en.wikipedia.org/wiki/File:CUDA_processing_flow_(En).PNG
+%% protok podataka 
+\includegraphics[scale=0.5]{res/CUDA_processing_flow_(hr).PNG}
+
+%TODO idejno objasni sliku
+
+
+Pri radu na CUDA-i, moramo razumjeti slijedeće pojmove:
+\begin{itemize}
+\item
+Domaćin (engl. \textit{host}) - računalo u kojem se nalazi grafička kartica.
+Kada kažemo, npr. memorija domaćina mislimo na RAM. 
+
+\item
+Uređaj (engl. \textit{device}) - grafička kartica.
+
+%TODO dodaj jos nekoliko
+\end{itemize}
+
+Prednosti koje ova tehnologija (odnosno grafičke kartice koje su
+sposobne koristiti ju) ima nad ostalim GPGPU tehnologijama
+su slijedeće:
+%TODO objasni sto je GPGPU
+
+\begin{itemize}
+\item
+Nudi pristup bilo kojem dijelu memorije. 
+
+\item
+Dretve mogu koristiti brzu zajedničku dijelnu memoriju. 
+
+\item
+Podrška za račun s cijelobrojnim tipovima podataka, uključujući
+i operacije s bitovima.
+\end{itemize}
+
+Nažalost, ništa u životu nije savršeno, pa tako nije niti CUDA.
+Treba imati na umu da i ona ima i neka ograničenja:
+
+\begin{itemize}
+\item
+Učestalo kopiranje memorije između uređaja i domaćina ima loš
+utjecaj na brzinu izvođenja programa.
+
+\item
+U praksi se pokazalo da trebamo koristiti barem 32 dretve paralelno
+da bismo dobili brži program nego onaj na CPU-u. Ukupan broj dretvi
+koje koristimo trebao bi se brojati u tisućama. 
+
+\item
+Sklopovlje je dostupno isključivo od jednog proizvođača - Nvidije. 
+
+\item
+Zbog nezrelosti prevoditelja i optimizatora valjani C/C++ kôd
+ne radi nužno i na CUDA-i. 
+
+\item
+Računanje s brojevima s posmačnim zarezom nije do kraja implementirano. 
+\end{itemize}
+
+
+
+
+
 
 \chapter{Implementacija}
-- cca 5 stranica
 
-\section{Smith-Waterman}
-- kako je sve spojeno
-- detalji implementacije - koje funkcije ocjene sam koristio, kako sam došao do njih
-- 
+\section{Implementacija simuliranog kaljenja}
+Simulirano kaljenje temelji se na postupku koji je identičan
+za sve tipove podataka. To nas navodi da implementaciju 
+riješimo koristeći oblikovni obrazac okvirna metoda. 
+Ideja tog oblikovnog obrasca jest da imamo jednu
+metodu (funkciju) koja izvodi neki postupak pozivajući
+generičke korake. Svaki korak može biti drugačije implementiran,
+ovisno o postupku koji želimo. 
+
+Izdvojimo apstraktne korake iz algoritma:
+\begin{enumerate}
+\item 
+Odabir susjeda.
+
+\item
+Računanje energije stanja.
+
+\item
+Računanje vjerojatnosti prihvaćanja.
+\end{enumerate}
+Kako točno rješavamo svaki od tih koraka, napisalo smo u
+prethodnom poglavlju. 
+
+Implementacijski gledano, sva tri postupka su funkcije.
+Prvi je funkcija koja prima jedan parametar, trenutno stanje
+te vraća transformirano stanje koje dobijemo primjenjujući
+translaciju i/ili rotaciju.
+Drugi prima takvo transformirano stanje i računa njegovu
+energiju. To radi tako da primjeni prethodno opisani
+Smith-Waterman algoritam nad transforimarnim i ciljnem
+nizom, ali ne radimo rekonstrukciju. 
+Treći prima energiju početnog i krajenjeg niza te trenutnu
+temperaturu te iz toga računa vjerojansto prihvaćanja
+novog niza. 
+
+Zahvaljujući genericima, tj. predlošcima, u C++ je lagano
+ostaviriti ortogonalnost. Njihovom upotrebom, omogućavamo
+da kôd algoritma napišemo samo jednom i da ga potom možemo
+koristiti na više mjesta, za više tipova podataka,
+što upravo i želimo. 
+
+Takva implementacija omogućuje nam da ovaj dio programskog
+rješenja testiramo i na nekom jednostavnijem problemu, što
+uvelike olakšava razvoj programske potpore jer ne moramo
+čekati za završetak cijelog sustava da bismo vidjeli radi li.
+Osim toga, prilikom bubolova (engl. \textit{debugging}) nam
+je lakše tražiti pogreške ako primjer možemo vizualizirati.
+Nažalost, kako ovo nije problem u kojem je vizualizaciju
+lagano napraviti, autor je koristio neke jednostavnije
+probleme da bi ispravio pogreške u ovom dijelu koda. Primjeri
+tih problema su traženje težišta poligona, %TODO jos bar dva primjera
+Prilagodba algoritma za tu svrhu svela se na reimplantaciju
+funkcija za računanje energije i odabir susjeda. 
+
+
+\section{Implementacija Smith-Watermanovog algoritma}
+Do sada smo razmatrali samo situaciju kada računamo jedno
+po jedno polje matrice $R$. Pretpostavka je bila da su 
+sva polja u prošlim retcima i trenutnom retku do trenutnog
+stupca izračunata i da ih možemo koristiti u daljnjem
+računu. 
+
+Međutim, kada koristimo masivno paralalene procesore, 
+želimo odjednonom računati više od jednog polja jer inače
+ne uprežemo svu snagu koju nam oni nude.
+
+Ideja na kojoj nam se temelji rješenje jest da primjetimo koja
+su polja nezavisna, tj. koja možemo koristiti u računu ako
+smo do sada već izračunali neki dio rješenja. Definirajmo
+novu matricu $W$ u kojoj nam $W_{i,j}$ označava broj polja 
+matrice $R$ koje moramo izračunati prije nego izračunamo
+polje $R_{i,j}$. Na početku će vrijediti slijedeće:
+$$
+W_{i,j} = \left\{ \begin{array}{ll}
+	0 & \mbox{ako je } i=0 \mbox{ i } j=0 \\
+	3 & \mbox{ako je } i>0 \mbox{ i } j>0 \\
+	1 & \mbox{inače}
+\end{array} \right.
+$$
+
+%TODO matrica W
+
+Jasno je da možemo izračunati vrijednosti samo onih polja
+za koje je $W_{i,j}=0$. Na početku je takvo samo jedno polje:
+$W_{0,0}$. Međitim, kada njega izračunamo, smanjit ćemo
+vrijednosti tri polja u matrici $W$: $W_{1,0}$, $W_{0,1}$ i
+$W_{1,1}$. To će uzrokovati da $W_{1,0}$ i $W_{0,1}$ postanu
+jednaki $0$, što znači da sada smijemo i njih izračanati.
+Kada to učinimo, i osvježimo vrijednosti u matrici $W$, 
+vidjet ćemo da smo dobili tri nove nule, na pozicijama
+$W_{2,0}$, $W_{0,2}$ i $W_{1,1}$. Pravilnost se već
+lagano počinje nazirati. Naime, sve elemente koji 
+se nalaze na istoj sporednoj dijagonali moći ćemo 
+izračunati u istom koraku. Stoga ćemo paralelizaciju
+temeljiti upravo na tome da u pojedinom koraku
+računamo sve elemente na sporednoj dijagonali. 
+
+%TODO prikaz vece matrice i dijagonala pofarbanih
+% na njoj
+
+Vremenska složenost takvog bi algoritma u optimalnom slučaju bila
+bi $O(M+N)$. Nažalost, realan je slučaj daleko od optimalnog. 
+Problem nam stvara to što nemamo dovoljno procesora da bismo
+mogli pokrenuti računanja nad svim elmentima dijagonale, ako je
+ona prevelika. Na sreću, CUDA nam ne stvara prevelike probleme
+ako koristimo stvorimo više blokova (do najviše 65536) nego što
+grafička kartica fizički može izračunati. S obzirom da dužina
+nizova vjerojatno neće biti puno veća od 15000 elemenata, 
+takvo ograničenje je sasvim prihvatljivo.
+
+Isto tako, ako u memoriju grafičke kartice ne stanu
+oba niza (što će se dogoditi, nasreću, samo za iznimno
+duge nizove koje nećemo promatrati), morat ćemo prilagoditi
+algoritam. Jedna efikasna ideja
+za rješavanje tog problema jest da podijelimo nizove na manje
+dijelove koje možemo u potpunosti riješiti te da kombiniramo
+tako dobivena rješenja. 
+Međutim, to izlazi izvan teme ovog rada, pa nećemo
+ovdje detaljno objasniti kako se to radi.
+
+Također, moramo biti svjesni da će konstanta koja je sakrivena u O
+notaciji biti puno veća nego kod obične implementicje na procesoru,
+budući da moramo koristiti barijere za sinkronizaciju. Pozivanje
+funkcija također troši vrijeme, a i pristup globalnoj memoriji
+uređaja jest skuplji nego pristup radnoj memoriji računala. 
+
+Što se memorijske složenosti tiče, i nju možemo ovdje ostvariti
+kao $O(M+N)$. Dovoljno nam je da, umjesto posljednja dva reda,
+pamtimo posljednje tri sporedne dijagonale. Rekonstrukcija
+se rješava Hirschbergovim algoritmom, koji će sada 
+
+
+
+
 
 \chapter{Rezultati}
 - cca 1-2 starnice
 
+
+
+
+
+
+
 \chapter{Zaključak}
 Zaključak.
 - cca 1-2 stranice
+
+- CUDA kao tehnologija jos je u zacecima, ali napreduje enormno brzo
+
+- mnogo stavri je neistarzeno
+
+- spomeni thrust i povuci paralelu s STL-om
+
+
+
+
+
+
 
 \bibliography{literatura}{}
 \bibliographystyle{fer}
