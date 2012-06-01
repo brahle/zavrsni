@@ -53,15 +53,124 @@ pdfstartview=FitH, % dokument će se prikazati tako da će mu širina odgovarati
 \listoftables
 
 \chapter{Uvod}
-Problemi s kojima se znanost danas susreće često prelaze granice isključivo
-jedne discipline. 
+Živimo u doba kada velikih promjena. Današnjim generacijama mladih nezamisliv
+je život bez Interneta i društvenih mreža. Internet, a kamoli društvene mreže,
+bili su nezamislivi njihovim roditeljima dok su bili mladi. Računala
+su bila (većinom i ostala) neshvatljiva čuda djedovima i bakama, dok
+je njihovim roditeljima čak i električna energija strana. 
 
-- pričaj o: bioinformatici, koje probleme ona rješava, zašto je problem koji si rješavao bitan,
-kome koristi, kako se može koristiti i potencijalno za što se sve može koristiti.
-- napiši zašto je ovo što si napravio jebeno i kako se može još poboljšati.
+Nije samo računarstvo doživjelo ogromne promjene. Tek pred nešto više od 
+stotinu godinu izumljen je automobil. Danas gotovo da ne postoji obitelj
+koja ne posjeduje barem jedan. 
+%TODO daj jos jedan primjer
+
+Još je veliki hrvatski pjesnik Petar Preradović u pjesmi "Mujezin" %TODO dodaj u bibliografiju, Vienac 1871.
+zapisao "Stalna na tom svijetu samo mijena jest." Ono što danas smatramo
+znanstvenom fantastikom za nekoliko bi godina moglo postati stvarnost. 
+Kako se povećava ljudsko znanje, tako se povećava i broj pitanja na 
+koje ljudi traže odgovore. Često problemi s kojima se znanost 
+susreće prelaze granice isključivo jedne discipline. Zbog toga je postao
+običaj da ljudi različitih profila sudjeluju na istom
+istraživanju. 
+
+%TODO dodaj jos nekoliko primjera gdje se razne grane znanosti susrecu
+
+Postoji čitav niz problema iz biologije koji se danas više ili manje efikasno
+rješavaju uz pomoć kompjutera. Ti problemi spadaju u područje koje nazivamo
+bioinformatikom. Glavni problema koje rješava bioinformatika su:
+
+\begin{itemize}
+\item
+Analiza nizova (engl. \textit{sequence analysis}). 
+
+\item
+Označavanje genoma (engl. \textit{genome annotation}).
+
+\item
+Računska evolucijska biologija (engl. \textit{computational
+evolutionary biology}).
+
+\item
+Dubinska analiza teksta (engl. \textit{literature analysis}, 
+\textit{data mining}).
+
+\item
+Analiza izražaja gena (engl. \textit{analysis of gene expression}).
+
+\item
+Analiza nadzora (engl. \textit{analysis of regulation}).
+
+\item
+Analiza izražaja proteina (engl. \textit{analysis of protein
+expression}).
+
+\item
+Analiza mutacija u raku (engl. \textit{analysis of mutations in cancer}).
+
+\item
+Usporedna genomika (enl. \textit{comparative genomics}).
+
+\item
+Modeliranje bioloških sistema (engl. \textit{modeling biological
+systems}).
+
+\item
+Visoko-propusna anliza slika (engl. \textit{high-throughput
+image analysis}).
+
+\item
+Predviđanje struktura proteina (engl. \textit{protein structure prediction}).
+
+\item 
+Interakcija među molekulama (engl. \textit{molecular Interaction}).
+\end{itemize}
+
+Problem koji mi rješavamo, poravnavanje struktura, može se staviti u više 
+područja koje smo naveli, budući da im se područja preklapaju. Taj problem
+bitan je jer, ako ga uspješno riješimo, napravilo smo veliki posao jer
+bi 
+
+
+
+
+- pričaj još o: zašto je problem koji si rješavao bitan,
+kome koristi, kako se može koristiti i potencijalno za što se
+sve može koristiti.
+
+- spomeni i grafičke kartice
+
 - cca 2 stranice
 
+- nešto sitno i o grafičkim karticama
+
 \chapter{Poravanavanje sturktura}
+U ovom radu bavit ćemo se rješavanjem slijedećeg problema: 
+
+Zadana su nam dva proteina, tj. pozicije u prostoru svakog od atoma
+koje protein sadrži. Zanimaju nas samo atomi ugljika, a ostali atomi
+nam nisu interesantni. Želimo jednog od njih transforimarati 
+koristeći samo translacije i rotacije tako da se što je moguće više
+preklapa s drugim. Protein koji ćemo rotirati zvat ćemo protein $B$,
+a protein $A$ bit će onaj s kojim ga želimo preklopiti. 
+
+Kao rješenje želimo dobiti preklapanje koje će poravnati
+neki podniz elemenata iz proteina $A$ i $B$ i koje će biti maksimalno
+za ta dva proteina. Zbog toga nas zanima i rekonstrukcija rješenja. 
+
+Da bismo dobili rješenje, koristit ćemo simulirano kaljenje 
+zajedno sa Smith-Watermanovim algoritmom za proračun energije. 
+Taj par algoritama trebao bi moći u "pristojnom" vremenu pronaći
+neko poravnanje koje je relativno blisko optimalnom. 
+
+Inovativnost ovog rada temelji se na tome da ćemo kao arhitekturu
+koristi GPU, tj. grafičku procesnu jedinicu. Prednost GPU arhitekture
+u odnosu na CPU jest to što je GPU masivno paralelan, što znači
+da imamo velik broj dretvi (broje se u stotinama!) koje nam omogućavaju
+da stvari rješavamo paralelno. 
+
+
+
+
 - detaljan opis problema
 - cca 1-2 stranice
 
@@ -729,7 +838,6 @@ koristili u implementaciji nisu previše istraženi.
 - cca 5 stranica
 
 \section{Smith-Waterman}
-
 - kako je sve spojeno
 - detalji implementacije - koje funkcije ocjene sam koristio, kako sam došao do njih
 - 
