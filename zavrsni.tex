@@ -4,6 +4,9 @@
 \usetikzlibrary{arrows}
 \usepackage{xcolor}
 \usepackage{colortbl}
+\usepackage{tabularx}
+
+
 \usepackage{hyperref}
 \hypersetup{
 unicode=true, % za unicode podršku u bookmarkovima i sl., svakako postaviti na true
@@ -29,13 +32,12 @@ pdfstartview=FitH, % dokument će se prikazati tako da će mu širina odgovarati
 
 \begin{document}
 
-% TODO: Navedite broj rada.
+\newcolumntype{R}{>{\centering\arraybackslash}X}%
+
 \thesisnumber{2321}
 
-% TODO: Navedite naslov rada.
 \title{SWIG - Poravnanje struktura korištenjem iterativne primjene Smith-Waterman algoritma}
 
-% TODO: Navedite vaše ime i prezime.
 \author{Bruno Rahle}
 
 \maketitle
@@ -53,6 +55,7 @@ pdfstartview=FitH, % dokument će se prikazati tako da će mu širina odgovarati
 \listoftables
 
 \chapter{Uvod}
+
 Živimo u doba kada velikih promjena. Današnjim generacijama mladih nezamisliv
 je život bez Interneta i društvenih mreža. Internet, a kamoli društvene mreže,
 bili su nezamislivi njihovim roditeljima dok su bili mladi. Računala
@@ -339,6 +342,8 @@ $A' = \mbox{"ATGCCGTA"}$ i $B' = \mbox{"-TGCACTA"}$.
 Trivijalno je vidljivo da su memorijska i vremenska složenost opisanog algoritma 
 jednake $O(NM)$. 
 
+
+
 \section{Smith-Watermanov algoritam}
 \label{sec:swalg}
 Razlika njega i prethodno opisanog Needleman-Wunschevog algoritma jest u tome
@@ -527,7 +532,17 @@ kada trebamo rekonstruirati rješenje pomoću matrice $R$, budući da
 se prilikom rekonstrukcije potencijalno vraćamo se kroz sva njena polja. U
 nastavku ćemo opisati rješenje tog problema.
 
--TODO: slika koja prikazuje da možemo koristiti samo dva posljednja retka
+\begin{tabularx}{400pt}{|R|R|R|R|R|R|R|R|R|R|R|R|R|R|R|R|R|R|R|R|}
+ \hline
+  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+  &  &  &  &  &  &  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  \\ \hline
+ \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.392157,0.392157,0.392157}  &  &  &  &  &  &  &  &  &  &  \\ \hline
+  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+\end{tabularx}
+
+-TODO: opis slike
 
 \subsection{Hirschbergov algoritam}
 Dan Hirschberg osmislio je algoritam koji rješava problem rekonstrukcije
@@ -549,12 +564,25 @@ niza $B$. Neka nam $p$ označava polovicu dužine niza $A$, zaokruženu na dolje
 Podijelimo niz $A$ na dvije polovice, dužine $p$.
 
 \item
-Na obje polovice niza ($A_{0..p}$ i $A_{p..N}$) pokrenemo gore opisani algoritam
-za pronalaženje
+Na obje polovice niza ($A_{0..p}$ i $A_{p..N}^{R}$) pokrenemo gore
+opisani algoritam za pronalaženje
 lokalnog poravnanja koje koristi $O(\min(N,M))$ memorije, ali bez
 rekonstrukcije. Nad drugom polovicom niza radimo algoritam za obrnuto
 nizove, tako da je za obje polovice posljednji izračunati red onaj odabran u
 prethodnom koraku. 
+
+\begin{tabularx}{160pt}{|R|R|R|R|R|R|R|R|}
+ \hline
+  & $\Rightarrow$ &  &  &  &  &  &  \\ \hline
+ $\Downarrow$ &  &  &  &  &  &  &  \\ \hline
+  &  &  &  &  &  &  &  \\ \hline
+  &  &  &  &  &  &  &  \\ \specialrule{3pt}{0pt}{0pt}
+  &  &  &  &  &  &  &  \\ \specialrule{3pt}{0pt}{0pt}
+  &  &  &  &  &  &  &  \\ \hline
+  &  &  &  &  &  &  &  \\ \hline
+  &  &  &  &  &  &  & $\Uparrow$ \\ \hline
+  &  &  &  &  &  & $\Leftarrow$ &  \\ \hline
+\end{tabularx}
 
 \item
 Definirajmo funkciju $\phi(j)$ kao sumu lokalnih poravnanja obje matrice u redu
@@ -564,6 +592,19 @@ Barem će jedan član globalnog poravnanja, biti u retku $p$, a Hirschberg
 je pokazao da će to biti onaj u stupcu $j$ za kojeg je $\phi(j)$ najveći.
 Time smo pronašli jedan član koji je sigurno u globalnom poravnanju.
 
+\begin{tabularx}{160pt}{|R|R|R|R|R|R|R|R|}
+ \hline
+  &  &  &  &  &  &  &  \\ \hline
+  &  &  &  &  &  &  &  \\ \hline
+  &  &  &  &  &  &  &  \\ \hline
+  &  &  &  &  &  &  &  \\ \specialrule{3pt}{0pt}{0pt}
+  &  &  &  &  & \cellcolor[rgb]{0.392157,0.392157,0.392157}  &  &  \\ \specialrule{3pt}{0pt}{0pt}
+  &  &  &  &  &  &  &  \\ \hline
+  &  &  &  &  &  &  &  \\ \hline
+  &  &  &  &  &  &  &  \\ \hline
+  &  &  &  &  &  &  &  \\ \hline
+\end{tabularx}
+
 \item
 S obzirom na svojstva globalnog poravnanja, intuitivno je jasno da
 polja koja se nalaze gore-desno i dolje-lijevo od pronađenog polja 
@@ -572,6 +613,19 @@ možemo izbaciti iz daljnjeg razmatranja. Ako rekurzivno primjenimo
 algoritam na parove podnizova $A_{0..p}$ i $B_{0,j}$ te $A_{p..N}$ i
 $B_{j..M}$, možemo ponavljajući postupak napraviti rekonstrukciju
 cijelog niza.
+
+\begin{tabularx}{160pt}{|R|R|R|R|R|R|R|R|}
+ \hline
+  &  &  &  &  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  \\ \hline
+  &  &  &  &  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  \\ \hline
+  &  &  &  &  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  \\ \hline
+  &  &  &  &  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  \\ \hline
+  &  &  &  &  & \cellcolor[rgb]{0.392157,0.392157,0.392157}  &  &  \\ \hline
+ \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  \\ \hline
+ \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  \\ \hline
+ \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  \\ \hline
+ \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  \\ \hline
+\end{tabularx}
 \end{enumerate}
 
 Ono što možda nije jasno jest vremenska složenost gore opisanog algoritma.
@@ -584,8 +638,6 @@ razlike u konstantni, ali je znanto smanjena količina iskorištene
 memorije, stoga se ova ušteda isplatiti koristiti.
 
 
-
-- TODO: slike svih koraka
 
 
 \section{Substitucija substitucijske matrice}
@@ -844,6 +896,12 @@ koja nam omogućuje da upregnemo moć grafičkih čipova na
 problemima za koje se tipično koristio CPU (odnosno procesor).
 Kopanija Nvidija razvila ju je za svoje grafičke kartice. 
 
+CUDA se smatra najnaprednijim alatom za općenamjensku uporabu
+grafičke jedinice (engl. GPGPU - \textit{\textbf{g}eneral
+\textbf{p}urpose \textbf{g}raphics \textbf{p}rocessing \textbf{u}nit}).
+%TODO jos o ovome
+
+
 Prva verzija CUDA-inog SDK-a (engl. \textit{\textbf{s}oftware
 \textbf{d}evelopment \textbf{k}it} - oprema za razvoj programske
 podrške) izdana je 15. veljače 2007.
@@ -869,6 +927,15 @@ Kada kažemo, npr. memorija domaćina mislimo na RAM.
 
 \item
 Uređaj (engl. \textit{device}) - grafička kartica.
+
+\item
+(engl. \textit{grid}) - 
+
+\item
+Dretva (engl. \textit{thread}) - 
+
+\item
+(engl. \textit{warp}) -
 
 %TODO dodaj jos nekoliko
 \end{itemize}
@@ -920,6 +987,8 @@ Računanje s brojevima s posmačnim zarezom nije do kraja implementirano.
 
 
 \chapter{Implementacija}
+
+%TODO nacrtaj UML dijagram, ako ce trebati jos nekoliko stranica
 
 \section{Implementacija simuliranog kaljenja}
 Simulirano kaljenje temelji se na postupku koji je identičan
@@ -1001,7 +1070,23 @@ W_{i,j} = \left\{ \begin{array}{ll}
 \end{array} \right.
 $$
 
-%TODO matrica W
+\begin{tabularx}{100pt}{|R|R|R|R|R|}
+ \hline
+ \cellcolor[rgb]{0.784314,0.784314,0.784314} 0 & 1 & 1 & 1 & 1 \\ \hline
+ 1 & 3 & 3 & 3 & 3 \\ \hline
+ 1 & 3 & 3 & 3 & 3 \\ \hline
+ 1 & 3 & 3 & 3 & 3 \\ \hline
+ 1 & 3 & 3 & 3 & 3 \\ \hline
+\end{tabularx}
+$\Rightarrow$
+\begin{tabularx}{100pt}{|R|R|R|R|R|}
+ \hline
+ \cellcolor[rgb]{0.784314,0.784314,0.784314} 0 & \cellcolor[rgb]{0.784314,0.784314,0.784314} 0 & 1 & 1 & 1 \\ \hline
+ \cellcolor[rgb]{0.784314,0.784314,0.784314} 0 & 2 & 3 & 3 & 3 \\ \hline
+ 1 & 3 & 3 & 3 & 3 \\ \hline
+ 1 & 3 & 3 & 3 & 3 \\ \hline
+ 1 & 3 & 3 & 3 & 3 \\ \hline
+\end{tabularx}
 
 Jasno je da možemo izračunati vrijednosti samo onih polja
 za koje je $W_{i,j}=0$. Na početku je takvo samo jedno polje:
@@ -1017,6 +1102,21 @@ se nalaze na istoj sporednoj dijagonali moći ćemo
 izračunati u istom koraku. Stoga ćemo paralelizaciju
 temeljiti upravo na tome da u pojedinom koraku
 računamo sve elemente na sporednoj dijagonali. 
+
+\begin{tabularx}{240pt}{|R|R|R|R|R|R|R|R|R|R|R|R|}
+ \hline
+  &  &  &  &  &  &  &  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  \\ \hline
+  &  &  &  &  &  &  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  \\ \hline
+  &  &  &  &  &  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  &  \\ \hline
+  &  &  &  &  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  &  &  \\ \hline
+  &  &  &  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  &  &  &  \\ \hline
+  &  &  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  &  &  &  &  \\ \hline
+  &  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  &  &  &  &  &  \\ \hline
+  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  &  &  &  &  &  &  \\ \hline
+  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  &  &  &  &  &  &  &  \\ \hline
+ \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+\end{tabularx}
 
 %TODO prikaz vece matrice i dijagonala pofarbanih
 % na njoj
@@ -1049,8 +1149,8 @@ uređaja jest skuplji nego pristup radnoj memoriji računala.
 
 Što se memorijske složenosti tiče, i nju možemo ovdje ostvariti
 kao $O(M+N)$. Dovoljno nam je da, umjesto posljednja dva reda,
-pamtimo posljednje tri sporedne dijagonale. Rekonstrukcija
-se rješava Hirschbergovim algoritmom, koji će sada 
+pamtimo posljednje tri sporedne dijagonale. Rekonstrukcija, iako nije potrebna
+rješava se Hirschbergovim algoritmom. 
 
 
 
