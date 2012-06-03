@@ -47,7 +47,9 @@ pdfstartview=FitH, % dokument će se prikazati tako da će mu širina odgovarati
 \izvornik
 
 % Dodavanje zahvale ili prazne stranice. Ako ne želite dodati zahvalu, naredbu ostavite radi prazne stranice.
-\zahvala{}
+\zahvala{Prve zahvale idu mojoj obitelji. Zahvaljujem se očevom spermiju
+što me stvorio, mami što me rodila, obitelji što me odgojila.
+Osim obitelji, zahvala ide i mentoru prof. Mili Šikiću.}
 
 \tableofcontents
 
@@ -1245,8 +1247,8 @@ Problem nam stvara to što nemamo dovoljno procesora da bismo
 mogli pokrenuti računanja nad svim elmentima dijagonale, ako je
 ona prevelika. Na sreću, CUDA nam ne stvara prevelike probleme
 ako koristimo stvorimo više blokova (do najviše 65536) nego što
-grafička kartica fizički može izračunati. S obzirom da dužina
-nizova vjerojatno neće biti puno veća od 15000 elemenata, 
+grafička kartica fizički može istovremeno izračunati. S obzirom
+da dužina nizova vjerojatno neće biti puno veća od 15000 elemenata, 
 takvo ograničenje je sasvim prihvatljivo.
 
 Isto tako, ako u memoriju grafičke kartice ne stanu
@@ -1266,16 +1268,12 @@ funkcija također troši vrijeme, a i pristup globalnoj memoriji
 uređaja jest skuplji nego pristup radnoj memoriji računala. 
 
 Što se memorijske složenosti tiče, i nju možemo ovdje ostvariti
-kao $O(M+N)$. Dovoljno nam je da, umjesto posljednja dva reda,
-pamtimo posljednje tri sporedne dijagonale. Rekonstrukcija, iako nije potrebna
-rješava se Hirschbergovim algoritmom. 
-
-
-
+kao $O(\min(M,N))$. Dovoljno nam je da, umjesto posljednja dva reda,
+pamtimo posljednje tri sporedne dijagonale. Rekonstrukcija, iako
+nam neće biti potrebna, može se riješiti Hirschbergovim algoritmom. 
 
 
 \chapter{Rezultati}
-- cca 1-2 starnice
 
 
 
@@ -1284,37 +1282,67 @@ rješava se Hirschbergovim algoritmom.
 
 
 \chapter{Zaključak}
-Zaključak.
-- cca 1-2 stranice
 
-- CUDA kao tehnologija jos je u zacecima, ali napreduje enormno brzo
+Jedan od najvećih problema s kojim se bioinformatika danas
+susreće je problem poravnanja struktura. Pojavom grafičkog sklopovlja
+koje omogućava općenamjensko računanje, znanstvenici su odmah
+prionuli poslu i počeli raditi na projektima kojima je za cilj
+iskoristiti moć tih čipova za rješavanje problema provananja
+struktura. No, tehnologija koja se koristi za rješavanje tih problema
+još uvijek je u povojima. Svakih nekoliko mjeseci izlaze
+čipovi koji su mnogostruko jači u odnose na prethodne, ali i
+nešto promijenjenom arhitekturom koja obično omugaćava pisanje
+efikasnijih programa. Zbog toga programi vrlo brzo zastarjevaju,
+a kako se povećava broj fizičkih jezgri koje kartice sadržavaju,
+mnoge pretpostavke koje su nam bile temelj osmišljavanja algoritma
+više ne vrijede. Za nekoliko godina moglo bi se dogoditi da grafička
+kartica ima i nekoliko stotina tisuća dretvi, što bi značilo
+da u većini slučajeva imamo dovoljno dretvi na raspologanju
+da sav posao koji možemo radimo paralelno. Time bismo mogli
+napraviti mnogo efikasnije algoritme. Također, pomoćni alati,
+biblioteke, pa čak i prevoditelj, su još u razvoju. 
 
-- mnogo stavri je neistarzeno
-
-- spomeni thrust i povuci paralelu s STL-om
-
-
-
-
-
+U ovom radu smo prikazali kako implementirati algoritam Smith-Waterman
+na CUDA grafičkoj kartici. On se koristi da pronađemo lakalno
+poravnanje dva niza. Specifičnost implementiranog je u tome što
+ne koristi supstitucijsku matricu kao osnovu za ocjenjivanje
+poravanja, već fiziče udaljenosti između molekula. Ako taj algoritam
+ukomponiramo kao sredstvo izračuna  energije u simuliranjom kaljenje,
+možemo pronaći takvu transformaciju
+drugog niza koja maksimizira vrijednost poravananja. Drugim riječima,
+pomoću njega možemo ocijeniti sličnost dva niza, bez obzira na 
+njihovu početnu poziciju. 
 
 
 \bibliography{literatura}{}
 \bibliographystyle{fer}
-% cca 2 stranice
+% cca 1 stranica
+% TODO dodaj jos stvari
 
 \begin{sazetak}
-Sažetak na hrvatskom jeziku.
+Algoritam dinamičkog programiranje Smith-Waterman služi nam da deterministički pronađemo lokalno poravnanje neka dva proteina. 
+Možemo ga prilagoditi da, umjesto supstitucijske matrice, kao sredstvo ocjene koristi fizičke udaljenosti između dvije molekule proteina u prostu.
+Metoda simuliranog kaljenja omogućava nam da pronađemo lokalni maksimum neke funkcije.
+Ako kao funkciju energije koristimo algoritam Smith-Waterman, a za pronalazak susjeda rotiramo i translatiramo drugi protein, možemo provjeriti koliko su dva proteina fizički slična bez obzira na njihovu početnu poziciju. 
+Implementacijom tih algoritama na grafičkim karticama koristeći CUDA tehnologiju, možemo dobiti nekoliko redova veličine brži kod, pogotovo kod većih proteina.
+Kod manjih proteina, efekt je nažalost obratan i dobivamo sporiji kod jer je konstanta skrivena u O notaciji relativno velika. 
 
-\kljucnerijeci{Ključne riječi, odvojene zarezima.}
+\kljucnerijeci{Smith-Waterman, CUDA, simulirano kaljenje, bioinformatika, paralelizacija,
+poravnanje struktura}
 \end{sazetak}
 
 % TODO: Navedite naslov na engleskom jeziku.
-\engtitle{Title}
+\engtitle{SWIG - Aligning structures using iterative application of Smith-Waterman algorithm}
 \begin{abstract}
-Abstract.
+Dynamic programming algorithm Smith-Waterman is used to deterministically find local alignment of two proteins. 
+We can modify it to, instead of using substitution matrix, use physical distances between two molecules as a rating function. 
+Simulated annealing method is used to find a local extreme (maximum) of a given function. 
+If we use Smith-Waterman algorithm as energy function, and for finding neighbors we rotate and translate one of the proteins, we can check how physically similar two proteins are regardless of their initial positions. 
+Implementing those algorithms on graphic cards using CUDA technology, we can get code that is orders of magnitude faster, especially with larger proteins.
+With smaller proteins, however, the effect is, unfortunately, adversary, and we get slower code because the constant hidden in O notation is relatively large. 
 
-\keywords{Keywords.}
+\keywords{Smith-Waterman, CUDA, simulated annealing, bioinformatics, parallelization,
+aligning structures}
 \end{abstract}
 
 \end{document}
