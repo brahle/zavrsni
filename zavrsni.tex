@@ -6,7 +6,6 @@
 \usepackage{colortbl}
 \usepackage{tabularx}
 
-
 \usepackage{hyperref}
 \hypersetup{
 unicode=true, % za unicode podršku u bookmarkovima i sl., svakako postaviti na true
@@ -26,9 +25,11 @@ pdfkeywords={kljucne rijeci - odvojite ih razmakom},
 pdfstartpage={}, % ovisno koji stil numeriranja stranica koristite (\Roman, \roman, \arabic, \alph, \Alph), možete postaviti broj (oznaku) stranice koja će se prikazati prilikom otvaranja dokumenta; prazne vitičaste zagrade uvijek znače prvu stranicu, bez obzira na koji način bila numerirana
 pdfstartview=FitH, % dokument će se prikazati tako da će mu širina odgovarati širini PDF preglednika
 }
-\def\subsectionautorefname{odlomak}
-\def\sectionautorefname{potpoglavlje}
-\def\chapterautorefname{poglavlje}
+\def\subsectionautorefname{Odlomak}
+\def\sectionautorefname{Potpoglavlje}
+\def\chapterautorefname{Poglavlje}
+\def\tableautorefname{Tablica}
+\def\figureautorefname{Slika}
 
 \begin{document}
 
@@ -214,15 +215,20 @@ u bioinformatici.
 		imati pozitivne brojeve, a na ostalim poljima negativne. To znači da nam
 		se najviše isplati preklapati nukletide istog tipa, jer za to dobivamo bodove,
 		a inače ih	gubimo. Primjer jedne takve matrice koju ćemo koristiti i u primjeru:
-		
-		$\begin{tabular}{c|cccc}
+
+		\begin{table}
+		\centering		
+		\begin{tabular}{c|cccc}
 		& A & C & G & T \\\specialrule{1pt}{0pt}{0pt}
 		A & 10 & -3 & -9 & -1 \\
 		C & -5 & 8 & -8 & -7 \\
 		G & -5 & -4 & 7 & -5\\
 		T & -4 & -11 & -8 & 9
 		\end{tabular}
-		$
+		\caption[Supstitucijska matrica]{Primjer supstitucijske matrice koju koristimo}
+		\end{table}				
+
+		
 	\item Negativan broj $d$, koji označava bodove koje dobijemo (tj. izgubimo) kada nukleotid
 		preklopimo s prazninom. U primjeru ćemo koristiti $d = -5$.
 \end{enumerate}
@@ -301,9 +307,15 @@ smanjujemo $j$ za jedan. Ako smo pročitali $X$, došli smo do kraja i generiral
 smo izlazni niz, ali u obrnutom redosljedu. 
 
 \subsection{Primjer}
-Za prethodno navedene ulazne podatke, matrice $F$ i $R$ izgledat će ovako:
-$$
-F =
+\autoref{table:Fnw} i \autoref{table:Rnw} sadrže potpuno izračunate matrice $F$ i $R$.
+Iz tih podataka lagano je napraviti
+potpunu rekonstrukciju (polja označena sivom bojom). Stoga zaključujemo da je
+traženo globlano poravnanje
+$A' = \mbox{"ATGCCGTA"}$ i $B' = \mbox{"-TGCACTA"}$.
+
+
+\begin{table}
+\centering
 \begin{tabular}{c|cccccccc}
  & - & T & G & C & A & C & T & A \\\specialrule{0.5pt}{0pt}{0pt}
 - & \cellcolor{lightgray} 0 & -5 & -10 & -15 & -20 & -25 & -30 & -35 \\ 
@@ -316,10 +328,13 @@ G & -30 & -16 & -4 & 9 & 9 & \cellcolor{lightgray} 17 & 17 & 12 \\
 T & -35 & -21 & -9 & 4 & 5 & 12 & \cellcolor{lightgray} 26 & 21 \\ 
 A & -40 & -26 & -14 & -1 & 14 & 9 & 21 & \cellcolor{lightgray} 36 \\ 
 \end{tabular}
-$$
+\caption[Matrica $F$ za Needleman-Wunschov algoritam]{Potpuno izračunata matrica $F$ za Needleman-Wunschov algoritam}
+\label{table:Fnw}
+\end{table}
 
-$$
-R =
+
+\begin{table}
+\centering
 \begin{tabular}{c|cccccccc}
  & - & T & G & C & A & C & T & A \\\specialrule{0.5pt}{0pt}{0pt}
 - & \cellcolor{lightgray} X & B & B & B & B & B & B & B \\ 
@@ -332,11 +347,10 @@ G & A & A & O & A & O & \cellcolor{lightgray} A & O & O \\
 T & A & O & A & A & O & A & \cellcolor{lightgray} O & B \\ 
 A & A & A & A & A & O & B & A & \cellcolor{lightgray} O \\ 
 \end{tabular}
-$$
-
-Iz tih podataka lagano je napraviti rekonstrukciju (polja označena sivom
-bojom). Stoga zaključujemo da je traženo globlano poravnanje
-$A' = \mbox{"ATGCCGTA"}$ i $B' = \mbox{"-TGCACTA"}$.
+\caption[Matrica $R$ za Needleman-Wunschov algoritam]{Potpuno izračunata matrica $R$ za
+Needleman-Wunschov algoritam}
+\label{table:Rnw}
+\end{table}
 
 \subsection{Analiza složenosti}
 Trivijalno je vidljivo da su memorijska i vremenska složenost opisanog algoritma 
@@ -414,10 +428,14 @@ ne dođemo do polja na kojem piše $X$ koje ovaj put ne mora nužno biti
 polje $R_{0,0}$. Dobiveni niz okrenemo i dobit ćemo traženo poravnanje.
 
 \subsection{Primjer}
-Za prethodno navedene ulazne podatke, matrice $H$ i $R$ izgledat će ovako:
+\autoref{table:Hsw} i \autoref{table:Rsw} prikazuju potpuno izračunate
+matrice $H$ i $R$ nakon izvršavanja Smith-Watermanovog algoritma. 
+Iz njih je lako očitati traženo poravnanje: $A' = \mbox{"TGC-CGTA"}$ i
+$B' = \mbox{"TGCAC-TA"}$.
 
-$$
-H =
+
+\begin{table}
+\centering
 \begin{tabular}{c|cccccccc}
  & - & T & G & C & A & C & T & A \\\specialrule{1pt}{0pt}{0pt}
 - & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ 
@@ -428,12 +446,14 @@ C & 0 & 0 & 11 & \cellcolor{lightgray} 24 & \cellcolor{lightgray} 19 & 14 & 9 & 
 C & 0 & 0 & 6 & 19 & 19 & \cellcolor{lightgray} 27 & 22 & 17 \\ 
 G & 0 & 0 & 7 & 14 & 14 & \cellcolor{lightgray} 22 & 22 & 17 \\ 
 T & 0 & 9 & 4 & 9 & 10 & 17 & \cellcolor{lightgray} 31 & 26 \\ 
-A & 0 & 4 & 0 & 4 & 19 & 14 & 26 & \cellcolor{lightgray} 41 \\ 
+A & 0 & 4 & 0 & 4 & 19 & 14 & 26 & \cellcolor{gray} 41 \\ 
 \end{tabular}
-$$
+\caption[Matrica $H$ za Smith-Watermanov algoritam]{Potpuno izračunata matrica $H$ za Smith-Watermanov algoritam}
+\label{table:Hsw}
+\end{table}
 
-$$
-R =
+\begin{table}
+\centering
 \begin{tabular}{c|cccccccc}
  & - & T & G & C & A & C & T & A \\\specialrule{1pt}{0pt}{0pt}
 - & X & X & X & X & X & X & X & X \\ 
@@ -446,10 +466,9 @@ G & X & X & O & A & O & \cellcolor{lightgray} A & O & O \\
 T & X & O & B & A & O & A & \cellcolor{lightgray} O & B \\ 
 A & X & A & O & A & O & B & A & \cellcolor{lightgray} O \\ 
 \end{tabular}
-$$
-
-Prema tome, traženo poravnanje jest $A' = \mbox{"TGC-CGTA"}$ i
-$B' = \mbox{"TGCAC-TA"}$.
+\caption[Matrica $R$ za Smith-Watermanov algoritam]{Potpuno izračunata matrica $R$ za Smith-Watermanov algoritam}
+\label{table:Rsw}
+\end{table}
 
 \subsection{Analiza složenosti}
 Trivijalno je vidljivo da su memorijska i vremenska složenost i ovog algoritma 
@@ -532,6 +551,8 @@ kada trebamo rekonstruirati rješenje pomoću matrice $R$, budući da
 se prilikom rekonstrukcije potencijalno vraćamo se kroz sva njena polja. U
 nastavku ćemo opisati rješenje tog problema.
 
+\begin{table}
+\centering
 \begin{tabularx}{400pt}{|R|R|R|R|R|R|R|R|R|R|R|R|R|R|R|R|R|R|R|R|}
  \hline
   &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
@@ -541,8 +562,14 @@ nastavku ćemo opisati rješenje tog problema.
  \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.392157,0.392157,0.392157}  &  &  &  &  &  &  &  &  &  &  \\ \hline
   &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
 \end{tabularx}
-
--TODO: opis slike
+\caption[Memorijska optimizacija]{Pod pretpostavkom da polja računamo iterativno 
+po recima, matrica prikazuje koja polja moramo čuvati u
+memoriji (svjetlo-siva boja) da bismo mogli izračunati preostala.
+Polje koje trenutno računamo
+pobojano je tamno-sivom bojom. U praksi ćemo, zbog jednostavnosti,
+čuvati cijeli prošli redak.}
+\label{table:memopt}
+\end{table}
 
 \subsection{Hirschbergov algoritam}
 Dan Hirschberg osmislio je algoritam koji rješava problem rekonstrukcije
@@ -571,18 +598,26 @@ rekonstrukcije. Nad drugom polovicom niza radimo algoritam za obrnuto
 nizove, tako da je za obje polovice posljednji izračunati red onaj odabran u
 prethodnom koraku. 
 
+\begin{table}
+\centering
 \begin{tabularx}{160pt}{|R|R|R|R|R|R|R|R|}
  \hline
   & $\Rightarrow$ &  &  &  &  &  &  \\ \hline
  $\Downarrow$ &  &  &  &  &  &  &  \\ \hline
   &  &  &  &  &  &  &  \\ \hline
-  &  &  &  &  &  &  &  \\ \specialrule{3pt}{0pt}{0pt}
-  &  &  &  &  &  &  &  \\ \specialrule{3pt}{0pt}{0pt}
+  &  &  &  &  &  &  &  \\ \hline
+ \cellcolor[rgb]{0.627451,0.627451,0.627451}  & \cellcolor[rgb]{0.627451,0.627451,0.627451}  & \cellcolor[rgb]{0.627451,0.627451,0.627451}  & \cellcolor[rgb]{0.627451,0.627451,0.627451}  & \cellcolor[rgb]{0.627451,0.627451,0.627451}  & \cellcolor[rgb]{0.627451,0.627451,0.627451}  & \cellcolor[rgb]{0.627451,0.627451,0.627451}  & \cellcolor[rgb]{0.627451,0.627451,0.627451}  \\ \hline
   &  &  &  &  &  &  &  \\ \hline
   &  &  &  &  &  &  &  \\ \hline
   &  &  &  &  &  &  & $\Uparrow$ \\ \hline
   &  &  &  &  &  & $\Leftarrow$ &  \\ \hline
 \end{tabularx}
+\caption[TODO: smisli dobar naslov]{Računanje Smith-Watermannovog algoritma
+na dvije polovice niza ($A_{0..p}$ i $A_{p..N}^{R}$). Svijetlo siva
+linija predstavlja red $p$, prvi odnosno posljednji red za koji
+računamo lokalno poravnanje. }
+\label{table:Halg:1}
+\end{table}
 
 \item
 Definirajmo funkciju $\phi(j)$ kao sumu lokalnih poravnanja obje matrice u redu
@@ -590,20 +625,27 @@ $p$, tj. kao:
 $$ \phi(j) = F_{p,j} + F^{R}_{p,j} $$
 Barem će jedan član globalnog poravnanja, biti u retku $p$, a Hirschberg
 je pokazao da će to biti onaj u stupcu $j$ za kojeg je $\phi(j)$ najveći.
-Time smo pronašli jedan član koji je sigurno u globalnom poravnanju.
+Time smo pronašli jedan član koji je sigurno u globalnom poravnanju. 
 
+\begin{table}
+\centering
 \begin{tabularx}{160pt}{|R|R|R|R|R|R|R|R|}
  \hline
   &  &  &  &  &  &  &  \\ \hline
   &  &  &  &  &  &  &  \\ \hline
   &  &  &  &  &  &  &  \\ \hline
-  &  &  &  &  &  &  &  \\ \specialrule{3pt}{0pt}{0pt}
-  &  &  &  &  & \cellcolor[rgb]{0.392157,0.392157,0.392157}  &  &  \\ \specialrule{3pt}{0pt}{0pt}
+  &  &  &  &  &  &  &  \\ \hline
+ \cellcolor[rgb]{0.627451,0.627451,0.627451}  & \cellcolor[rgb]{0.627451,0.627451,0.627451}  & \cellcolor[rgb]{0.627451,0.627451,0.627451}  & \cellcolor[rgb]{0.627451,0.627451,0.627451}  & \cellcolor[rgb]{0.627451,0.627451,0.627451}  & \cellcolor[rgb]{0.313725,0.313725,0.313725}  & \cellcolor[rgb]{0.627451,0.627451,0.627451}  & \cellcolor[rgb]{0.627451,0.627451,0.627451}  \\ \hline
   &  &  &  &  &  &  &  \\ \hline
   &  &  &  &  &  &  &  \\ \hline
   &  &  &  &  &  &  &  \\ \hline
   &  &  &  &  &  &  &  \\ \hline
 \end{tabularx}
+\caption[TODO: smisli dobar naslov 2]{Nakon što smo završili s računanjem
+poravnanja na oba dijela niza, trebamo pronaći polje u kojem je $\phi(j)$
+maksimalno. To polje označeno je tamno-sivom bojom.}
+\label{table:Halg:2}
+\end{table}
 
 \item
 S obzirom na svojstva globalnog poravnanja, intuitivno je jasno da
@@ -614,18 +656,28 @@ algoritam na parove podnizova $A_{0..p}$ i $B_{0,j}$ te $A_{p..N}$ i
 $B_{j..M}$, možemo ponavljajući postupak napraviti rekonstrukciju
 cijelog niza.
 
+\begin{table}
+\centering
 \begin{tabularx}{160pt}{|R|R|R|R|R|R|R|R|}
  \hline
-  &  &  &  &  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  \\ \hline
-  &  &  &  &  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  \\ \hline
-  &  &  &  &  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  \\ \hline
-  &  &  &  &  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  \\ \hline
-  &  &  &  &  & \cellcolor[rgb]{0.392157,0.392157,0.392157}  &  &  \\ \hline
- \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  \\ \hline
- \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  \\ \hline
- \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  \\ \hline
- \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  \\ \hline
+  &  &  &  &  &  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  \\ \hline
+  &  &  &  &  &  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  \\ \hline
+  &  &  &  &  &  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  \\ \hline
+  &  &  &  &  &  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  \\ \hline
+  &  &  &  &  & \cellcolor[rgb]{0.313725,0.313725,0.313725}  &  &  \\ \hline
+ \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  &  &  &  \\ \hline
+ \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  &  &  &  \\ \hline
+ \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  &  &  &  \\ \hline
+ \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  &  &  &  \\ \hline
 \end{tabularx}
+\caption[Odbacivanje polja u Hirschbergovom algoritmu]{Budući da
+smo sigurni da polja gore-desno i dolje-lijevo nisu u 
+traženom globalnom poravnanju, njih ne trebamo dalje promatrati.
+Na slici su označena svijetlo sivom bojom.}
+\label{table:Halg:3}
+\end{table}
+
+
 \end{enumerate}
 
 Ono što možda nije jasno jest vremenska složenost gore opisanog algoritma.
@@ -666,7 +718,12 @@ i  finija. Drugim riječima, \textit{željezo se kuje dok je vruće}.
 Taj proces pokušavamo simulirati u ovom algoritmu.
 
 %preuzeto s http://www.flickr.com/photos/beginasyouare/6121659469/sizes/l/in/photostream/
+\begin{figure}[h]
+\centering
 \includegraphics{res/Kovanje_zeljeza_l.jpg}
+\caption[Kovanje željeza]{Kovanje željeza}
+\label{figure:kovanje}
+\end{figure}
 
 \section{Algoritam}
 Uvedimo nekoliko definicija:
@@ -730,8 +787,8 @@ ili rotacija događa se u određenom intervalu, to jest,
 nećemo raditi translacije koje za više od $x$ niti rotacije za više od
 $\alpha$ stupnjeva.
 
-- slika koja prikazuje pomak po kutevima
-
+\begin{figure}
+\centering
 \definecolor{qqqqff}{rgb}{0,0,1}
 \begin{tikzpicture}[line cap=round,line join=round,>=triangle 45,x=1.0cm,y=1.0cm]
 \clip(0.71,-1.14) rectangle (6.10,2.76);
@@ -747,9 +804,15 @@ $\alpha$ stupnjeva.
 \draw[color=qqqqff] (6.04,0.07) node {$C$};
 \end{scriptsize}
 \end{tikzpicture}
+\caption[Rotacija nizova]{Slika prikazuje
+maksimalu i minimalnu rotaciju nekog niza. Rotacija se radi oko
+izvorišta. Iako radimo u 3D prosturu, za primjer je dana 2D
+rotacija.}
+\label{figure:susjed:rotacija}
+\end{figure}
 
-- slika koja prikazuje pomak po koordinatama
-
+\begin{figure}
+\centering
 \definecolor{zzttqq}{rgb}{0.6,0.2,0}
 \definecolor{qqqqff}{rgb}{0,0,1}
 \begin{tikzpicture}[line cap=round,line join=round,>=triangle 45,x=1.0cm,y=1.0cm]
@@ -777,6 +840,12 @@ $\alpha$ stupnjeva.
 \draw[color=qqqqff] (6.08,0.16) node {$C$};
 \end{scriptsize}
 \end{tikzpicture}
+\caption[Translacija nizova]{Slika prikazuje
+maksimalu i minimalnu translaciju nekog niza. 
+Iako radimo u 3D prosturu, za primjer je dana 2D
+translacija.}
+\label{figure:susjed:translacija}
+\end{figure}
 
 \subsection{Računanje energije}
 Za račuanje energije, koristimo prethodno opisani Smith-Waterman algoritam. 
@@ -829,7 +898,8 @@ $$
 Primjetite da se, umjesto vremena, u njoj govori o temperaturi,
 koja eksponencijalno pada kako vrijeme odmiče. 
 
-U nastavku je dan graf funkcije $P(\Delta e, T)$, gdje je $\Delta e = e'-e$. Os
+\autoref{figure:vjerojatnost} daje graf funkcije $P(\Delta e, T)$, gdje
+je $\Delta e = e'-e$. Os
 $x$ predstavlja $\Delta e$, os $y$ je $T$ (bitno je ponoviti da
 vremenom ova vrijednost pada) te os $z$ prikazuje vrijednost $P$. 
 Budući da 3D graf prikazujemo na 2D površini, pobojali smo ga
@@ -837,7 +907,12 @@ u gradijent s obzirom na njegovu vrijednost kako bismo ga lakše
 interpretirali. 
 
 % preuzeto s https://www.google.hr/search?hl=en&biw=1857&bih=995&noj=1&sclient=psy-ab&q=1%2F%281%2Be%5E%28x%2Fy%29%29&oq=1%2F%281%2Be%5E%28x%2Fy%29%29&aq=f&aqi=&aql=&gs_l=serp.3...274395.277370.0.277780.6.6.0.0.0.0.176.515.5j1.6.0...0.0.h3zpB1qjAkE
-\includegraphics{res/P_graf_de(0_100)_t(1,100).PNG}
+\begin{figure}
+\centering
+\includegraphics[scale=0.8]{res/P_graf_de(0_100)_t(1,100).PNG}
+\caption[Graf funkcije $P$]{Graf funkcije vjerojatnosti prihvaćanja $P$.}
+\label{figure:vjerojatnost}
+\end{figure}
 
 \section{Modifikacije}
 
@@ -853,8 +928,16 @@ koraku. Mi ćemo u našem rješenju koristiti više ($k$) njih. Od tako dobiveni
 uzimamo onaj koji je najbolji i uspoređujemo ga, kako je gore opisano,
 s trenutnim stanjem. 
 
-%TODO opis slike
-\includegraphics[scale=0.4]{res/energije_susjeda.png}
+\begin{figure}
+\centering
+\includegraphics[scale=0.5]{res/energije_susjeda.png}
+\caption[Korištenje više susjeda u algoritmu simuliranog kaljenja]{
+Prikazan je slučaj kada imamo 20 susjeda. Energije svih susjeda koji
+imaju energiju veću od trenutnog niza su označene tamno-plavom bojom,
+a jedino je energija najvećeg susjeda, u koju ćemo premjestiti trenutno
+stanje, pobojana u ljubičasto.}
+\label{figure:susjedi}
+\end{figure}
 
 S obzirom da nam je svaki korak ocjenjivanja relativno skup, time se možemo
 osigurati rijetko odlazimo u slabija stanja. Međutim, takav pohlepan
@@ -914,9 +997,18 @@ neslužbene poveznice.
 
 %% preuzeto s http://en.wikipedia.org/wiki/File:CUDA_processing_flow_(En).PNG
 %% protok podataka 
-\includegraphics[scale=0.5]{res/CUDA_processing_flow_(hr).PNG}
-
-%TODO idejno objasni sliku
+\begin{figure}
+\centering
+\includegraphics[scale=0.7]{res/CUDA_processing_flow_(hr).PNG}
+\caption[Protok podataka na CUDA grafičkim karticama]{Protok podataka
+na CUDA grafičkim karticama. Prvo iz glavne memorije računala (RAM-a)
+kopiramo podatke u memoriju na GPU-u. Potom procesor naređuje
+GPU-u da pokrene odgovarajući kernel na nekom broju jezgri. 
+Kada one završe, rezultat se kopira nazad u glavnu memoriju.
+CUDA SDK nas traži da ručno napravimo korake 1, 2 i 4, a on
+se brine da se pravilno izvrši korak 3.}
+\label{figure:cuda:dataflow}
+\end{figure}
 
 
 Pri radu na CUDA-i, moramo razumjeti slijedeće pojmove:
@@ -930,12 +1022,14 @@ Uređaj (engl. \textit{device}) - grafička kartica.
 
 \item
 (engl. \textit{grid}) - 
+%TODO objasni
 
 \item
 Dretva (engl. \textit{thread}) - 
 
 \item
 (engl. \textit{warp}) -
+%TODO objasni
 
 %TODO dodaj jos nekoliko
 \end{itemize}
@@ -978,8 +1072,10 @@ Zbog nezrelosti prevoditelja i optimizatora valjani C/C++ kôd
 ne radi nužno i na CUDA-i. 
 
 \item
-Računanje s brojevima s posmačnim zarezom nije do kraja implementirano. 
+Računanje s brojevima s posmačnim zarezom nije implementirano posve
+po standardima, ali u većini slučajeva to ne igra nikakvu ulogu.
 \end{itemize}
+
 
 
 
@@ -1070,6 +1166,8 @@ W_{i,j} = \left\{ \begin{array}{ll}
 \end{array} \right.
 $$
 
+\begin{table}
+\centering
 \begin{tabularx}{100pt}{|R|R|R|R|R|}
  \hline
  \cellcolor[rgb]{0.784314,0.784314,0.784314} 0 & 1 & 1 & 1 & 1 \\ \hline
@@ -1081,12 +1179,26 @@ $$
 $\Rightarrow$
 \begin{tabularx}{100pt}{|R|R|R|R|R|}
  \hline
- \cellcolor[rgb]{0.784314,0.784314,0.784314} 0 & \cellcolor[rgb]{0.784314,0.784314,0.784314} 0 & 1 & 1 & 1 \\ \hline
+ \cellcolor[rgb]{0.392157,0.392157,0.392157} 0 & \cellcolor[rgb]{0.784314,0.784314,0.784314} 0 & 1 & 1 & 1 \\ \hline
  \cellcolor[rgb]{0.784314,0.784314,0.784314} 0 & 2 & 3 & 3 & 3 \\ \hline
  1 & 3 & 3 & 3 & 3 \\ \hline
  1 & 3 & 3 & 3 & 3 \\ \hline
  1 & 3 & 3 & 3 & 3 \\ \hline
 \end{tabularx}
+$\Rightarrow$
+\begin{tabularx}{100pt}{|R|R|R|R|R|}
+ \hline
+ \cellcolor[rgb]{0.392157,0.392157,0.392157} 0 & \cellcolor[rgb]{0.392157,0.392157,0.392157} 0 & \cellcolor[rgb]{0.784314,0.784314,0.784314} 0 & 1 & 1 \\ \hline
+ \cellcolor[rgb]{0.392157,0.392157,0.392157} 0 & \cellcolor[rgb]{0.784314,0.784314,0.784314} 0 & 2 & 3 & 3 \\ \hline
+ \cellcolor[rgb]{0.784314,0.784314,0.784314} 0 & 2 & 3 & 3 & 3 \\ \hline
+ 1 & 3 & 3 & 3 & 3 \\ \hline
+ 1 & 3 & 3 & 3 & 3 \\ \hline
+\end{tabularx}
+\caption[Matrica $W$]{Matrica $W$ na polju $W_{i,j}$ prikazuje broj polja koja
+trebamo izračunati prije nego izračunamo polje $H_{i,j}$. Tamno-sivom bojom
+prikazana su izračunata polja, a svijetlo-sivom ona koja možemo izračunati. }
+\label{table:impl:sw:W}
+\end{table}
 
 Jasno je da možemo izračunati vrijednosti samo onih polja
 za koje je $W_{i,j}=0$. Na početku je takvo samo jedno polje:
@@ -1103,6 +1215,8 @@ izračunati u istom koraku. Stoga ćemo paralelizaciju
 temeljiti upravo na tome da u pojedinom koraku
 računamo sve elemente na sporednoj dijagonali. 
 
+\begin{table}
+\centering
 \begin{tabularx}{240pt}{|R|R|R|R|R|R|R|R|R|R|R|R|}
  \hline
   &  &  &  &  &  &  &  &  & \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  \\ \hline
@@ -1117,6 +1231,10 @@ računamo sve elemente na sporednoj dijagonali.
  \cellcolor[rgb]{0.784314,0.784314,0.784314}  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
   &  &  &  &  &  &  &  &  &  &  &  \\ \hline
 \end{tabularx}
+\caption[Prikaz sporedne dijagonale]{Prikazana je jedna od sporednih
+dijagonala matrice. Sva polja na njoj možemo računati u istom trenutku.}
+\label{table:impl:dijagonala}
+\end{table}
 
 %TODO prikaz vece matrice i dijagonala pofarbanih
 % na njoj
