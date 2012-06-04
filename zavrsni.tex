@@ -67,10 +67,10 @@ je njihovim roditeljima čak i električna energija strana.
 
 Nije samo računarstvo doživjelo ogromne promjene. Tek pred nešto više od 
 stotinu godinu izumljen je automobil. Danas gotovo da ne postoji obitelj
-koja ne posjeduje barem jedan. 
-%TODO daj jos jedan primjer
+koja ne posjeduje barem jedan. Slično vrijedi i za perilicu rublja i 
+televizore.
 
-Još je veliki hrvatski pjesnik Petar Preradović u pjesmi "Mujezin" %TODO dodaj u bibliografiju, Vienac 1871.
+Još je veliki hrvatski pjesnik Petar Preradović u pjesmi "Mujezin" 
 zapisao "Stalna na tom svijetu samo mijena jest." Ono što danas smatramo
 znanstvenom fantastikom za nekoliko bi godina moglo postati stvarnost. 
 Kako se povećava ljudsko znanje, tako se povećava i broj pitanja na 
@@ -78,8 +78,6 @@ koje ljudi traže odgovore. Često problemi s kojima se znanost
 susreće prelaze granice isključivo jedne discipline. Zbog toga je postao
 običaj da ljudi različitih profila sudjeluju na istom
 istraživanju. 
-
-%TODO dodaj jos nekoliko primjera gdje se razne grane znanosti susrecu
 
 Postoji čitav niz problema iz biologije koji se danas više ili manje efikasno
 rješavaju uz pomoć kompjutera. Ti problemi spadaju u područje koje nazivamo
@@ -164,7 +162,7 @@ neki podniz elemenata iz proteina $A$ i $B$ i koje će biti maksimalno
 za ta dva proteina. Zbog toga nas zanima i rekonstrukcija rješenja. 
 
 Da bismo dobili rješenje, koristit ćemo simulirano kaljenje 
-zajedno sa Smith-Watermanovim algoritmom za proračun energije. 
+zajedno sa Smith-Wa{\-}ter{\-}man{\-}ovim algoritmom za proračun energije. 
 Taj par algoritama trebao bi moći u "pristojnom" vremenu pronaći
 neko poravnanje koje je relativno blisko optimalnom. 
 
@@ -376,7 +374,7 @@ Vidi \autoref{subsec:nwout}.
 \subsection{Algoritam}
 \label{subsec:swalg}
 U ovom ćemo algoritmu koristiti matricu $H$ za računanje poravnanja.
-Za razliku od Needleman-Wunschevog algoritma, $H_{i,j}$ ovaj će put
+Za razliku od Nee{\-}dle{\-}man-Wunschevog algoritma, $H_{i,j}$ ovaj će put
 označavati rezultat
 najboljeg lokalnog poravnanja koje koristi $A_{i-1}$ i $B_{j-1}$.
 Matricu ćemo popuniti na slijedeći način:
@@ -614,7 +612,7 @@ prethodnom koraku.
   &  &  &  &  &  &  & $\Uparrow$ \\ \hline
   &  &  &  &  &  & $\Leftarrow$ &  \\ \hline
 \end{tabularx}
-\caption[TODO: smisli dobar naslov]{Računanje Smith-Watermannovog algoritma
+\caption[Hirschbergov algoritam: podijela matrice]{Računanje Smith-Watermannovog algoritma
 na dvije polovice niza ($A_{0..p}$ i $A_{p..N}^{R}$). Svijetlo siva
 linija predstavlja red $p$, prvi odnosno posljednji red za koji
 računamo lokalno poravnanje. }
@@ -643,7 +641,8 @@ Time smo pronašli jedan član koji je sigurno u globalnom poravnanju.
   &  &  &  &  &  &  &  \\ \hline
   &  &  &  &  &  &  &  \\ \hline
 \end{tabularx}
-\caption[TODO: smisli dobar naslov 2]{Nakon što smo završili s računanjem
+\caption[Hirschbergov algoritam: pronalazak elementa globalnog poravnanja]{
+Nakon što smo završili s računanjem
 poravnanja na oba dijela niza, trebamo pronaći polje u kojem je $\phi(j)$
 maksimalno. To polje označeno je tamno-sivom bojom.}
 \label{table:Halg:2}
@@ -672,7 +671,7 @@ cijelog niza.
  \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  &  &  &  \\ \hline
  \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  & \cellcolor[rgb]{0.862745,0.862745,0.862745}  &  &  &  \\ \hline
 \end{tabularx}
-\caption[Odbacivanje polja u Hirschbergovom algoritmu]{Budući da
+\caption[Hirschbergov algoritam: odbacivanje polja]{Budući da
 smo sigurni da polja gore-desno i dolje-lijevo nisu u 
 traženom globalnom poravnanju, njih ne trebamo dalje promatrati.
 Na slici su označena svijetlo sivom bojom.}
@@ -694,8 +693,8 @@ memorije, stoga se ova ušteda isplatiti koristiti.
 
 
 
-\section{Substitucija substitucijske matrice}
-- TODO: neko bolje ime za ovo potpoglavlje
+\section{Odstranjivanje substitucijske matrice}
+%TODO neko bolje ime za ovo potpoglavlje
 
 U ovom ćemo radu umjesto supstitucijske matrice za usporedbu dva elementa
 koristiti fizičku udaljenost između dva atoma. Stoga će nizovi A i B biti
@@ -719,7 +718,6 @@ na visokoj temperaturi, a, kako se hlade, tako obrada postaje sve finija
 i  finija. Drugim riječima, \textit{željezo se kuje dok je vruće}. 
 Taj proces pokušavamo simulirati u ovom algoritmu.
 
-%preuzeto s http://www.flickr.com/photos/beginasyouare/6121659469/sizes/l/in/photostream/
 \begin{figure}[h]
 \centering
 \includegraphics{res/Kovanje_zeljeza_l.jpg}
@@ -892,10 +890,9 @@ $$
 P(e, e', T) = 
 \left\{ \begin{array}{ll}
 	1 & \mbox{ako je } e' > e \\
-	\frac{1}{1+\exp \frac{e'-e}{T}} & \mbox{inače}
+	\frac{1}{1+\exp ((e'-e)/T)} & \mbox{inače}
 \end{array} \right.
 $$
-%TODO povećaj font u ovoj jednadžbi.
 
 Primjetite da se, umjesto vremena, u njoj govori o temperaturi,
 koja eksponencijalno pada kako vrijeme odmiče. 
@@ -908,7 +905,6 @@ Budući da 3D graf prikazujemo na 2D površini, pobojali smo ga
 u gradijent s obzirom na njegovu vrijednost kako bismo ga lakše 
 interpretirali. 
 
-% preuzeto s https://www.google.hr/search?hl=en&biw=1857&bih=995&noj=1&sclient=psy-ab&q=1%2F%281%2Be%5E%28x%2Fy%29%29&oq=1%2F%281%2Be%5E%28x%2Fy%29%29&aq=f&aqi=&aql=&gs_l=serp.3...274395.277370.0.277780.6.6.0.0.0.0.176.515.5j1.6.0...0.0.h3zpB1qjAkE
 \begin{figure}
 \centering
 \includegraphics[scale=0.8]{res/P_graf_de(0_100)_t(1,100).PNG}
@@ -984,8 +980,11 @@ Kopanija Nvidija razvila ju je za svoje grafičke kartice.
 CUDA se smatra najnaprednijim alatom za općenamjensku uporabu
 grafičke jedinice (engl. GPGPU - \textit{\textbf{g}eneral
 \textbf{p}urpose \textbf{g}raphics \textbf{p}rocessing \textbf{u}nit}).
-%TODO jos o ovome
-
+S obzirom da se grafičke kartice nalaze u gotovo svim
+računalima, a vrlo se rijetko koriste u svojoj punoj moći
+(obično samo u računalnim igrama), inžinjerima i znanstvenicima
+palo je na pamet da ne bi bilo loše iskoristiti njihovu snagu
+u rješavanju općenitijih zadataka. 
 
 Prva verzija CUDA-inog SDK-a (engl. \textit{\textbf{s}oftware
 \textbf{d}evelopment \textbf{k}it} - oprema za razvoj programske
@@ -997,8 +996,6 @@ jezika C++. Osim službenog SDK-a, za čitav niz programskih jezika,
 poput Fortrana, Jave, Haskella, Perla, Pythona, Matlaba, napisane su
 neslužbene poveznice. 
 
-%% preuzeto s http://en.wikipedia.org/wiki/File:CUDA_processing_flow_(En).PNG
-%% protok podataka 
 \begin{figure}
 \centering
 \includegraphics[scale=0.7]{res/CUDA_processing_flow_(hr).PNG}
@@ -1023,23 +1020,26 @@ Kada kažemo, npr. memorija domaćina mislimo na RAM.
 Uređaj (engl. \textit{device}) - grafička kartica.
 
 \item
-(engl. \textit{grid}) - 
-%TODO objasni
+Blok (engl. \textit{block}) - skup dretvi koje se izvršavaju
+paralelno. 
+
+\item
+Mreža (engl. \textit{grid}) - skup blokova koji se izvršavaju paralelno.
 
 \item
 Dretva (engl. \textit{thread}) - 
 
 \item
-(engl. \textit{warp}) -
-%TODO objasni
+Osnova (engl. \textit{warp}) - skup dretvi unutar bloka koje
+se izvršavaju istodobno. Za njih možemo pretpostaviti
+da su u svakom trenutku na istom mjestu u kodu, pa ih 
+međusobno ne treba sinkronizirati. 
 
-%TODO dodaj jos nekoliko
 \end{itemize}
 
 Prednosti koje ova tehnologija (odnosno grafičke kartice koje su
 sposobne koristiti ju) ima nad ostalim GPGPU tehnologijama
 su slijedeće:
-%TODO objasni sto je GPGPU
 
 \begin{itemize}
 \item
@@ -1138,7 +1138,8 @@ je lakše tražiti pogreške ako primjer možemo vizualizirati.
 Nažalost, kako ovo nije problem u kojem je vizualizaciju
 lagano napraviti, autor je koristio neke jednostavnije
 probleme da bi ispravio pogreške u ovom dijelu koda. Primjeri
-tih problema su traženje težišta poligona, %TODO jos bar dva primjera
+tih problema su traženje specifične točke u prostoru, 
+traženje težišta poligona i optimizacije puta trgovačkog putnika. 
 Prilagodba algoritma za tu svrhu svela se na reimplantaciju
 funkcija za računanje energije i odabir susjeda. 
 
@@ -1238,9 +1239,6 @@ dijagonala matrice. Sva polja na njoj možemo računati u istom trenutku.}
 \label{table:impl:dijagonala}
 \end{table}
 
-%TODO prikaz vece matrice i dijagonala pofarbanih
-% na njoj
-
 Vremenska složenost takvog bi algoritma u optimalnom slučaju bila
 bi $O(M+N)$. Nažalost, realan je slučaj daleko od optimalnog. 
 Problem nam stvara to što nemamo dovoljno procesora da bismo
@@ -1275,7 +1273,44 @@ nam neće biti potrebna, može se riješiti Hirschbergovim algoritmom.
 
 \chapter{Rezultati}
 
+Da provjerimo radi li nam program, pokrenuli smo ga
+na nekim primjerima za koje već znamo rješenje. 
+U ostalim slučajevima, za neku brzu provjeru vjerodostojnosti,
+izračunat ćemo energiju koju bismo imali ako bismo pokušali
+poravnati prvi niz sa samim
+sobom. Budući da je to ujedno i maksimalna energija koju potencijalno
+možemo pronaći, iz nje i najbolje pronađene energije možemo
+razumjeti koliko nas je algoritam simuliranog kaljenja doveo
+blizu rješenja. 
 
+U općem slučaju, zanima nas kako se mijenja energija kroz vrijeme,
+budući nju želimo maksimizirati. U nastavku
+su dani grafovi koji prikazuju tri energije: energiju najboljeg
+susjeda, energiju najboljeg do sada pronađenog elementa i
+energiju trenutno aktivnog elementa. Osim toga, prikazuju i
+trenutnu temperaturu, da bi nam bilo jasno koliko često
+prihvaćamo rješenja slabija od trenutnog. 
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.7]{res/run_1.png}
+\caption[Izvođenje programa na proteinima 1d0nA i 2d8bA]{Izvođenje programa
+na proteinima 1d0nA i 2d8bA. Uspjeli smo ostvariti otprilike
+20\% maksimalne moguće vrijednosti preklapanja (nešto manje od 730000). }
+\label{figure:run_1}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.7]{res/run_2.png}
+\caption[Izvođenje programa na proteinu 1a0iA i njegovoj nasumičnoj
+transformaciji]{Uzeli smo protein 1a0iA i iz njega generirali
+nasumičnu transformaciju. Potom smo pokrenuli algoritam i dobili gotovo
+100\% preklapanje u manje od 10 koraka. Budući da se u 15 koraka
+trenutno riješenje nije promijenilo, nešto nakon 90. koraka
+smo resetirali temperaturu, kako bismo pokušali naći bolje rješenje.}
+\label{figure:run_2}
+\end{figure}
 
 
 
@@ -1306,18 +1341,20 @@ U ovom radu smo prikazali kako implementirati algoritam Smith-Waterman
 na CUDA grafičkoj kartici. On se koristi da pronađemo lakalno
 poravnanje dva niza. Specifičnost implementiranog je u tome što
 ne koristi supstitucijsku matricu kao osnovu za ocjenjivanje
-poravanja, već fiziče udaljenosti između molekula. Ako taj algoritam
-ukomponiramo kao sredstvo izračuna  energije u simuliranjom kaljenje,
+poravanja, već fiziče udaljenosti između molekula. Ta funkcija
+sigurno se može još unaprijediti i time bi se rezultati također
+mogli poboljšati. Ako takvu implementaciju Smith-Watermanovog algoritma
+ukomponiramo kao sredstvo izračuna energije u simuliranjom
+ka{\-}lje{\-}nju,
 možemo pronaći takvu transformaciju
 drugog niza koja maksimizira vrijednost poravananja. Drugim riječima,
 pomoću njega možemo ocijeniti sličnost dva niza, bez obzira na 
 njihovu početnu poziciju. 
 
+\nocite{*}
 
 \bibliography{literatura}{}
 \bibliographystyle{fer}
-% cca 1 stranica
-% TODO dodaj jos stvari
 
 \begin{sazetak}
 Algoritam dinamičkog programiranje Smith-Waterman služi nam da deterministički pronađemo lokalno poravnanje neka dva proteina. 
@@ -1331,7 +1368,6 @@ Kod manjih proteina, efekt je nažalost obratan i dobivamo sporiji kod jer je ko
 poravnanje struktura}
 \end{sazetak}
 
-% TODO: Navedite naslov na engleskom jeziku.
 \engtitle{SWIG - Aligning structures using iterative application of Smith-Waterman algorithm}
 \begin{abstract}
 Dynamic programming algorithm Smith-Waterman is used to deterministically find local alignment of two proteins. 
