@@ -21,7 +21,8 @@ bookmarksnumbered=true, % uz imena bookmarkova će se prikazati i njihov broj
 pdftitle={SWIG - Poravnanje struktura korištenjem iterativne primjene Smith-Waterman algoritma},
 pdfauthor={Bruno Rahle},
 pdfsubject={tema},
-pdfkeywords={kljucne rijeci - odvojite ih razmakom},
+pdfkeywords={Smith-Waterman, CUDA, simulirano kaljenje, bioinformatika, paralelizacija,
+poravnanje struktura},
 pdfstartpage={}, % ovisno koji stil numeriranja stranica koristite (\Roman, \roman, \arabic, \alph, \Alph), možete postaviti broj (oznaku) stranice koja će se prikazati prilikom otvaranja dokumenta; prazne vitičaste zagrade uvijek znače prvu stranicu, bez obzira na koji način bila numerirana
 pdfstartview=FitH, % dokument će se prikazati tako da će mu širina odgovarati širini PDF preglednika
 }
@@ -49,7 +50,8 @@ pdfstartview=FitH, % dokument će se prikazati tako da će mu širina odgovarati
 % Dodavanje zahvale ili prazne stranice. Ako ne želite dodati zahvalu, naredbu ostavite radi prazne stranice.
 \zahvala{Prve zahvale idu mojoj obitelji. Zahvaljujem se očevom spermiju
 što me stvorio, mami što me rodila, obitelji što me odgojila.
-Osim obitelji, zahvala ide i mentoru prof. Mili Šikiću.}
+Osim obitelji, zahvala ide i mentoru docentu Mili Šikiću.}
+
 
 \tableofcontents
 
@@ -81,78 +83,47 @@ istraživanju.
 
 Postoji čitav niz problema iz biologije koji se danas više ili manje efikasno
 rješavaju uz pomoć kompjutera. Ti problemi spadaju u područje koje nazivamo
-bioinformatikom. Glavni problema koje rješava bioinformatika su:
+bioinformatikom. Jedan od njih je i problem poravnanje proteina (koji su
+zapravo nizovi molekula). Za neka dva proteina, zanima nas koliko
+su, prema nekoj mjeri, slični. Mjera koju ćemo u ovom radu koristiti
+je fizička udaljenost između dvije molekule. Da bismo malo "zapaprili" stvari,
+dopustit ćemo jednostavne transformacije - rotaciju i translaciju - jednog
+od proteina. Taj problem dalje možemo apstrahirati na problem poravnanja
+bilo kakvih struktura. 
 
-\begin{itemize}
-\item
-Analiza nizova (engl. \textit{sequence analysis}). 
+\autoref{chapter:PoravnanjeStruktura} govorit će općenito o problemu s kojim
+se susrećemo i načinu na koji smo mu pristupili. Opisat će ideju
+našeg rješenja i koje novosti ono donosi u odnosu na dosadašnja.
 
-\item
-Označavanje genoma (engl. \textit{genome annotation}).
+\autoref{chapter:SWAlg} govorit će o načinu rješavanja problema
+pronalaska poravnanja. Prvo ćemo krenuti od algoritma za globalno
+poravnanje, potom ćemo opisati algoritam za traženje lokalnog poravnanja,
+te ćemo se baviti njihovim optimizacijama.
 
-\item
-Računska evolucijska biologija (engl. \textit{computational
-evolutionary biology}).
+\autoref{chapter:SimuliranoKaljenje} govorit će o algoritmu simuliranog
+kaljenja i načinu na koji smo ga prilagodili za naše specifične potrebe, 
+dok ćemo \autoref{chapter:CUDA} iskoristiti za lagani uvod u CUDA
+tehnologiju te njene prednosti i mane.
 
-\item
-Dubinska analiza teksta (engl. \textit{literature analysis}, 
-\textit{data mining}).
+\autoref{chapter:Implementacija} će nešto detaljnije opisati
+specifičnosti implementacije te kako su elementi povezani. Pozabavit ćemo
+se rješenjima koje nam omogućuju da upregnemo snagu masivno paralelnih
+čipova.
 
-\item
-Analiza izražaja gena (engl. \textit{analysis of gene expression}).
-
-\item
-Analiza nadzora (engl. \textit{analysis of regulation}).
-
-\item
-Analiza izražaja proteina (engl. \textit{analysis of protein
-expression}).
-
-\item
-Analiza mutacija u raku (engl. \textit{analysis of mutations in cancer}).
-
-\item
-Usporedna genomika (enl. \textit{comparative genomics}).
-
-\item
-Modeliranje bioloških sistema (engl. \textit{modeling biological
-systems}).
-
-\item
-Visoko-propusna anliza slika (engl. \textit{high-throughput
-image analysis}).
-
-\item
-Predviđanje struktura proteina (engl. \textit{protein structure prediction}).
-
-\item 
-Interakcija među molekulama (engl. \textit{molecular Interaction}).
-\end{itemize}
-
-Problem koji mi rješavamo, poravnavanje struktura, može se staviti u više 
-područja koje smo naveli, budući da im se područja preklapaju. Taj problem
-bitan je jer, ako ga uspješno riješimo, napravilo smo veliki posao jer
-bi 
+\autoref{chapter:Rezultati} prikazat će dobivene rezultate i kako se
+naše rješenje eventualno može po{\-}bo{\-}lj{\-}ša{\-}ti, dok ćemo konačnu analizu
+napraviti ostaviti za \autoref{chapter:Zakljucak}.
 
 
 
-
-- pričaj još o: zašto je problem koji si rješavao bitan,
-kome koristi, kako se može koristiti i potencijalno za što se
-sve može koristiti.
-
-- spomeni i grafičke kartice
-
-- cca 2 stranice
-
-- nešto sitno i o grafičkim karticama
-
-\chapter{Poravanavanje sturktura}
+\chapter{Poravnavanje sturktura}
+\label{chapter:PoravnanjeStruktura}
 U ovom radu bavit ćemo se rješavanjem slijedećeg problema: 
 
-Zadana su nam dva proteina, tj. pozicije u prostoru svakog od atoma
-koje protein sadrži. Zanimaju nas samo atomi ugljika, a ostali atomi
-nam nisu interesantni. Želimo jednog od njih transforimarati 
+Zadana su nam dva proteina, tj. pozicije u prostoru svakog od molekula
+koje protein sadrži. Zanimaju nas samo atomi koji se nalaze u okosnici
+aminokiseline te od dva proteina napravimo dva niza takvih atoma. Želimo
+jednog od njih transformirati 
 koristeći samo translacije i rotacije tako da se što je moguće više
 preklapa s drugim. Protein koji ćemo rotirati zvat ćemo protein $B$,
 a protein $A$ bit će onaj s kojim ga želimo preklopiti. 
@@ -174,47 +145,40 @@ da stvari rješavamo paralelno. Najzrelija tehnologija koja nudi
 korištenje grafičkih kartica u svrhu procesiranja podataka je CUDA.
 Unatoč nekim ograničenjima (npr. radi samo na Nvidijinim grafičkim
 karticama), odlučili smo koristiti upravo nju za potrebe implementacije
-rješenja ovog problema. 
+rješenja ovog problema. Da bismo upregnuli svu moć koju nam taj
+čip za masivno paralelno računanje daje, nećemo uspoređivati samo jedan
+po jedan niz, već ćemo to raditi na više njih paralelno.
 
-- detaljan opis problema
-- cca 1-2 stranice
+%TODO dodaj onaj opis iz Ivaninog rada
+
 
 \chapter{Smith-Watermanov algoritam}
+\label{chapter:SWAlg}
 Smith-Watermanov algoritam služi nam da bismo pronašli lokalno poravnanje. 
-Osmislili su ga Temple F. Smith i Michael S. Waterman 1981. \cite{smithwaterman1981}.
-Temelji se na Needleman-Wunschevom algoritmu (\cite{needlemanwunsch1970})
+Osmislili su ga Temple F. Smith i Michael S. Waterman (\citealp{smithwaterman1981}).
+Temelji se na Needleman-Wunschevom algoritmu (\citealp{needlemanwunsch1970})
 te i sam spada u kategoriju algoritama dinamičkog programiranja. Glavna razlika
-između ta dva algoritma jest što Needleman-Wunschov algoritam prolazi globalno
-poravananje.
+između ta dva algoritma jest što Needleman-Wunschov algoritam pronalazi globalno
+poravnanje. Unatoč toj razlici, ulaz i izlaz oba algoritma možemo 
+definirati na jednak način. 
 
-- napisi jos teksta ovdje.
-
-\section{Needleman-Wunschov algoritam}
-\label{sec:nwalg}
-Algoritam, kao što je već rečeno, traži globalno poravnanje. To znači da se svi 
-članovi ulaznih nizova moraju poravnati. Dopuštene operacije kada tražimo poravnanje
-su preklapanje s elementom iz suprotnog niza i ubacivanje praznina u neki od nizova.
-Sve parove elemenata u dobivenom preklapanju bodujemo i na osnovu te ocjene
-određujemo sličnost nizova. Konačan rezultat ovog algoritma jest poravnanje koje
-maksimizira takvu ocjenu, tj. daje maksimalno globalno poravnanje.
-
-Zanimljivost je da je to prvi algoritam dinamičkog programiranja ikada primjenjen
-u bioinformatici.
-
+\section{Ulazni i izlazni podaci}
 \subsection{Ulazni podaci}
-\label{subsec:nwinp}
+\label{subsec:inp}
 \begin{enumerate}
 	\item Dva niza ($A$ i $B$) proteina ili nukleotida. Zbog jednostavnosti, pretpostavit
 		ćemo da su to nukleotidi iz DNK - adenin (A), timin (T), gvanin (G) i citozin (C).
 		U primjeru ćemo koristiti $A = "ATGCCGTA"$ i $B = "TGCACTA"$. Dužinu niza $A$
 		označit ćemo s $N$, a dužinu niza $B$ s $M$. 
+		
 	\item Supstitucijska matrica $S$, koja nam daje bodove koje dobijemo kada jedan
 		nukletoid preklopimo s drugim. U našem će slučaju imati
 		dimenzije $4 \times 4$, budući da ćemo razmatrati
 		slučaj kada imamo samo četiri nukleotida. U principu će na dijagonali
 		imati pozitivne brojeve, a na ostalim poljima negativne. To znači da nam
 		se najviše isplati preklapati nukletide istog tipa, jer za to dobivamo bodove,
-		a inače ih	gubimo. Primjer jedne takve matrice koju ćemo koristiti i u primjeru:
+		a inače ih	gubimo. \autoref{table:supstitutionMatrix} prikazuje
+		jednu takvu matricu.
 
 		\begin{table}
 		\centering		
@@ -226,21 +190,35 @@ u bioinformatici.
 		T & -4 & -11 & -8 & 9
 		\end{tabular}
 		\caption[Supstitucijska matrica]{Primjer supstitucijske matrice koju koristimo}
+		\label{table:supstitutionMatrix}
 		\end{table}				
 
 		
-	\item Negativan broj $d$, koji označava bodove koje dobijemo (tj. izgubimo) kada nukleotid
-		preklopimo s prazninom. U primjeru ćemo koristiti $d = -5$.
+	\item Negativan broj $d$, koji označava bodove koje dobijemo (tj. izgubimo)
+		kada nukleotid preklopimo s prazninom. U primjeru ćemo koristiti $d = -5$.
 \end{enumerate}
 
 \subsection{Izlazni podaci}
-\label{subsec:nwout}
+\label{subsec:out}
 \begin{enumerate}
 	\item Broj $H$, ocjena najboljeg globalnog poravnanja.
 	\item Dva nova niza jednake dužine, $A'$ i $B'$, nastala ubacivanjem praznina
-		(označenih najčešće sa '-') u nizove $A$ i $B$ koja predstavljaju najbolje pronađeno
-		poravnanje.
+		(označenih najčešće sa '-') u nizove $A$ i $B$ koja predstavljaju najbolje
+		pronađeno poravnanje.
 \end{enumerate}
+
+
+\section{Needleman-Wunschov algoritam}
+\label{sec:nwalg}
+Algoritam, kao što je već rečeno, traži globalno poravnanje. To znači da se svi 
+članovi ulaznih nizova moraju poravnati. Dopuštene operacije kada tražimo poravnanje
+su preklapanje s elementom iz suprotnog niza i ubacivanje praznina u neki od nizova.
+Sve parove elemenata u dobivenom preklapanju bodujemo i na osnovu te ocjene
+određujemo sličnost nizova. Konačan rezultat ovog algoritma jest poravnanje koje
+maksimizira takvu ocjenu, tj. daje maksimalno globalno poravnanje.
+
+Zanimljivost je da je to prvi algoritam dinamičkog programiranja ikada primijenjen
+u bioinformatici.
 
 \subsection{Algoritam}
 \label{subsec:nwalg}
@@ -265,7 +243,7 @@ F_{i,j} = \left\{
 \right.
 $$
 
-U $F_{N,M}$ će nam stoga pisati maksimalno globalno poravnanje. Primjetite da
+U $F_{N,M}$ će nam stoga pisati maksimalno globalno poravnanje. Primijetite da
 u niti jednom slučaju nećemo poravnati dvije praznine. Ako bismo to učinili, 
 samo bismo izgubili bodove, budući da je $d$ nužno negativan broj.
 
@@ -298,19 +276,19 @@ R_{i,j} = \left\{
 $$
 
 Rekonstrukciju provodimo tako krenemo iz polja $R_{N,M}$ i krećemo se
-po matrici unazad dok ne dođemo do polja na kojem piđe $X$, tj. $R_{0,0}$.
+po matrici unazad dok ne dođemo do polja na kojem piše $X$, tj. $R_{0,0}$.
 Ako na polju pročitamo $O$,
-pomičemo se po dijagonili, tj. u izlazni niz spremimo par $(A_{i-1}, B_{j-1})$ te
+pomičemo se po dijagonali, tj. u izlazni niz spremimo par $(A_{i-1}, B_{j-1})$ te
 smanjimo i $i$ i $j$. Ako pročitamo $A$, spremamo par $(A_{i-1}, -)$ te smanjimo
 samo $i$ za jedan. U slučaju da pročitamo $B$, spremamo par $(-, B_{j-1})$ te
 smanjujemo $j$ za jedan. Ako smo pročitali $X$, došli smo do kraja i generirali
-smo izlazni niz, ali u obrnutom redosljedu. 
+smo izlazni niz, ali u obrnutom redoslijedu. 
 
 \subsection{Primjer}
 \autoref{table:Fnw} i \autoref{table:Rnw} sadrže potpuno izračunate matrice $F$ i $R$.
 Iz tih podataka lagano je napraviti
 potpunu rekonstrukciju (polja označena sivom bojom). Stoga zaključujemo da je
-traženo globlano poravnanje
+traženo globalno poravnanje
 $A' = \mbox{"ATGCCGTA"}$ i $B' = \mbox{"-TGCACTA"}$.
 
 
@@ -328,7 +306,8 @@ G & -30 & -16 & -4 & 9 & 9 & \cellcolor{lightgray} 17 & 17 & 12 \\
 T & -35 & -21 & -9 & 4 & 5 & 12 & \cellcolor{lightgray} 26 & 21 \\ 
 A & -40 & -26 & -14 & -1 & 14 & 9 & 21 & \cellcolor{lightgray} 36 \\ 
 \end{tabular}
-\caption[Matrica $F$ za Needleman-Wunschov algoritam]{Potpuno izračunata matrica $F$ za Needleman-Wunschov algoritam}
+\caption[Matrica $F$ za Needleman-Wunschov algoritam]{Potpuno izračunata
+matrica $F$ za Needleman-Wunschov algoritam}
 \label{table:Fnw}
 \end{table}
 
@@ -365,12 +344,6 @@ Razlika njega i prethodno opisanog Needleman-Wunschevog algoritma jest u tome
 nužno cijele nizove proteina ili nukleotida već samo najsličnije uzastopne
 podnizove. U praksi se koriste nešto poboljšane verzije ovog algoritma.
 
-\subsection{Ulazni podaci}
-Vidi \autoref{subsec:nwinp}.
-
-\subsection{Izlazni podaci}
-Vidi \autoref{subsec:nwout}.
-
 \subsection{Algoritam}
 \label{subsec:swalg}
 U ovom ćemo algoritmu koristiti matricu $H$ za računanje poravnanja.
@@ -392,10 +365,11 @@ H_{i,j} =
 \end{array} \right.
 $$
 
-Primjetite bitnu razliku u odnosu na Needleman-Wunschev algoritam - u ovom
+Primijetite bitnu razliku u odnosu na Needleman-Wunschev algoritam - u ovom
 slučaju matrica $H$ neće sadržavati negativne brojeve. Rješenje, tj. najbolje
 lokalno poravnanje više neće pisati na polju $H_{N, M}$. Ono će biti na polju 
-$(t, u)$ na kojem se nalazi najveći broj u matrici.
+na kojem se nalazi najveći broj u matrici, a to je a njega ćemo nazvati
+$H_{t, u}$.
 
 Da bismo znali rekonstruirati takvo lokalno poravnanje, koristit ćemo matricu
 $R$ koju gradimo na sličan način kao i kod prethodnog algoritma:
@@ -423,7 +397,7 @@ R_{i,j} =  \left\{
 $$
 
 Rekonstrukcija se, slično kao i kod Needleman-Wunschevog algoritma,
-izvodi tako da krenemo iz polja $(t, u)$ i krećemo se  po matrici $R$ dok
+izvodi tako da krenemo iz polja $R_{t, u}$ i krećemo se  po matrici $R$ dok
 ne dođemo do polja na kojem piše $X$ koje ovaj put ne mora nužno biti 
 polje $R_{0,0}$. Dobiveni niz okrenemo i dobit ćemo traženo poravnanje.
 
@@ -487,9 +461,10 @@ cijenu ($c$), a nazivamo ga \textit{konstantnom ocjenom procjepa}.
 
 Drugi je kombinacija prethodna dva načina: za svaki procjep plaćamo fiksnu
 cijenu ($c$), ali za njegovo produženje plaćamo neku drugu cijenu ($d$).
+Tu ideju prvi je uveo \citealp{gotoh}.
 Takvu funkciju ocjene procjepa nazivamo \textit{Afinom ocjenom procjepa}.
-Prema tome, za procjep dužine $k$, platit ćem cijenu jednaku $c + (k-1)d$.
-Kako je empirijski pokazano da je ta funkcija u biti parobala, ovakva je
+Prema tome, za procjep dužine $k$, platit ćemo cijenu jednaku $c + (k-1)d$.
+Kako je empirijski pokazano da je ta funkcija u biti parabola, ovakva je
 ocjena ujedno i najpreciznija. Nažalost, ona otežava računanje matrice
 $H$ (i $R$). Problem je najlakše riješiti tako da uvedemo dvije nove
 matrice $H^A$ i $H^B$ koje će nam pomoći u računanju cijene procjepa.
@@ -535,18 +510,20 @@ H^{B}_{i,j} =
 $$
 
 Rekonstrukcijska matrica vrlo je slična onoj u izvorno opisanom
-algoritmu, a kako ćemo u udućem potpoglavlju maknuti potrebu za njom,
+algoritmu, a kako ćemo u idućem potpoglavlju maknuti potrebu za njom,
 nećemo je posebno navoditi. 
 
 \section{Memorijska optimizacija}
 S obzirom da nizovi nukleotida mogu sadržavati i do nekoliko milijuna
 elemenata, matrica dimenzija $N M$ fizički ne stane u memoriju. 
-Međutim, čim primjetimo da za potrebe generiranja matrice $H$ (a ujedno i
+Međutim, čim primijetimo da za potrebe generiranja matrice $H$ (a ujedno i
 $H^A$ odnosno $H^B$) koristimo
 samo polja iz trenutnog i prethodnog retka, postaje jasno da nam ostali 
 reci koje smo obradili ranije njih nisu potrebni. Stoga možemo pamtiti 
 samo ta dva retka i time korištenu memoriju za proračun
-matrice $H$ smanjimo na samo $O(\min(N, M))$. Ipak, problem se javlja
+matrice $H$ smanjimo na samo $O(\min(N, M))$. \autoref{table:memopt}
+prikazuje koja polja minimalno moramo pamtiti. 
+Ipak, problem se javlja
 kada trebamo rekonstruirati rješenje pomoću matrice $R$, budući da
 se prilikom rekonstrukcije potencijalno vraćamo se kroz sva njena polja. U
 nastavku ćemo opisati rješenje tog problema.
@@ -566,14 +543,15 @@ nastavku ćemo opisati rješenje tog problema.
 po recima, matrica prikazuje koja polja moramo čuvati u
 memoriji (svjetlo-siva boja) da bismo mogli izračunati preostala.
 Polje koje trenutno računamo
-pobojano je tamno-sivom bojom. U praksi ćemo, zbog jednostavnosti,
+pobojamo je tamno-sivom bojom. U praksi ćemo, zbog jednostavnosti,
 čuvati cijeli prošli redak.}
 \label{table:memopt}
 \end{table}
 
 \subsection{Hirschbergov algoritam}
 Dan Hirschberg osmislio je algoritam koji rješava problem rekonstrukcije
-globalnog poravnanja u $O(NM)$ vremena koristeći $O(\min(N, M))$ memorije.
+globalnog poravnanja u $O(NM)$ vremena koristeći $O(\min(N, M))$ memorije
+(\citealp{hirschberg}).
 Njegova ideja temeljena je na metodi \textit{podijeli-pa-vladaj}.
 
 No, prije nego je objasnimo, promotrimo što će se dogoditi s globalnim
@@ -612,7 +590,7 @@ prethodnom koraku.
   &  &  &  &  &  &  & $\Uparrow$ \\ \hline
   &  &  &  &  &  & $\Leftarrow$ &  \\ \hline
 \end{tabularx}
-\caption[Hirschbergov algoritam: podijela matrice]{Računanje Smith-Watermannovog algoritma
+\caption[Hirschbergov algoritam: podjela matrice]{Računanje Smith-Watermanovog algoritma
 na dvije polovice niza ($A_{0..p}$ i $A_{p..N}^{R}$). Svijetlo siva
 linija predstavlja red $p$, prvi odnosno posljednji red za koji
 računamo lokalno poravnanje. }
@@ -652,7 +630,7 @@ maksimalno. To polje označeno je tamno-sivom bojom.}
 S obzirom na svojstva globalnog poravnanja, intuitivno je jasno da
 polja koja se nalaze gore-desno i dolje-lijevo od pronađenog polja 
 sigurno nisu u točnom globalnom poravnanju, stoga ta polja
-možemo izbaciti iz daljnjeg razmatranja. Ako rekurzivno primjenimo
+možemo izbaciti iz daljnjeg razmatranja. Ako rekurzivno primijenimo
 algoritam na parove podnizova $A_{0..p}$ i $B_{0,j}$ te $A_{p..N}$ i
 $B_{j..M}$, možemo ponavljajući postupak napraviti rekonstrukciju
 cijelog niza.
@@ -682,18 +660,16 @@ Na slici su označena svijetlo sivom bojom.}
 \end{enumerate}
 
 Ono što možda nije jasno jest vremenska složenost gore opisanog algoritma.
-Pokazuje se da pri odbacivanju polja odbacimo u pravlu polovicu trenutno
+Pokazuje se da pri odbacivanju polja odbacimo u pravilu polovicu trenutno
 razmatranih polja. Prema tome, broj operacija koje napravimo možemo napisati
 u obliku geometrijskog niza:
 $$ NM + NM/2 + NM/4 + ... < 2 NM \in O(NM) $$
 Time dolazimo do zaključka da je složenost i dalje ostala jednaka do
-razlike u konstantni, ali je znanto smanjena količina iskorištene
+razlike u konstantni, ali je znatno smanjena količina iskorištene
 memorije, stoga se ova ušteda isplatiti koristiti.
 
 
-
-
-\section{Odstranjivanje substitucijske matrice}
+\section{Odstranjivanje supstitucijske matrice}
 %TODO neko bolje ime za ovo potpoglavlje
 
 U ovom ćemo radu umjesto supstitucijske matrice za usporedbu dva elementa
@@ -701,12 +677,20 @@ koristiti fizičku udaljenost između dva atoma. Stoga će nizovi A i B biti
 zapravo nizovi koordinata iz kojih ćemo moći za svaki par elemenata
 izračunati koordinate. 
 
-Neka nam $d$ označava udaljenost između dva atoma, a $d_0$ neka nam
-je konstanta (recimo $d_0 = 10$). Tada ćemo im udaljenost ocijeniti s
-$30-e^{d/d_0}$. 
+Neka nam $d$ označava udaljenost između dva atoma. Želimo napraviti funkciju
+koja će za dvije molekule koje su fizički bliske vratiti pozitivnu vrijednost,
+a za one koje su udaljene negativnu. Nadalje, odlično bi bilo da skok
+između jednake razlike u udaljenostima u početku budu malen, ali što
+je veća udaljenost, da time i on raste.
+To nas navodi na negativnu eksponencijalnu funkciju. Primjer jedne takve
+funkcije je $d_1 - e^{d/d_0}$, gdje su $d_1$ i $d_0$ konstante. U praksi
+su se $d_0 = 10$ i $d_1 = 1000$ pokazale kao dobar izbor. 
+
+
 
 
 \chapter{Algoritam simuliranog kaljenja}
+\label{chapter:SimuliranoKaljenje}
 Algoritam simuliranog kaljenja generička je metoda bazirana na vjerojatnosti koja
 traži ekstrem neke funkcije u velikom prostoru traženja. Zbog toga što nam ne
 garantira da će pronaći najbolje rješenje, obično se koristi kada nam je
@@ -715,7 +699,8 @@ vremenu.
 
 Inspiracija za algoritam dolazi iz metalurgije. Metali se prvo grubo obrađuju
 na visokoj temperaturi, a, kako se hlade, tako obrada postaje sve finija
-i  finija. Drugim riječima, \textit{željezo se kuje dok je vruće}. 
+i  finija. Drugim riječima, \textit{željezo se kuje dok je vruće}, kao
+što prikazuje \autoref{figure:kovanje}. 
 Taj proces pokušavamo simulirati u ovom algoritmu.
 
 \begin{figure}[h]
@@ -758,7 +743,7 @@ dok nismo dobili stanje koje ima traženu energiju ili dok vrijeme nije isteklo.
 Odaberi stanje $S'$ koje je susjedno stanju $S$. 
 
 \item
-Izračnaj energiju novog stanja $e' = E(S')$. 
+Izračunaj energiju novog stanja $e' = E(S')$. 
 
 \item 
 Provjeri ima li novo stanje veću energiju od najboljeg do sada pronađenog stanja.
@@ -784,8 +769,9 @@ prostoru.
 
 Da bismo bili sigurni da ne radimo prevelike skokove, svaka translacija
 ili rotacija događa se u određenom intervalu, to jest,
-nećemo raditi translacije koje za više od $x$ niti rotacije za više od
-$\alpha$ stupnjeva.
+nećemo raditi translacije koje za više od $x$, kao što prikazuje \autoref{figure:susjed:translacija},
+niti rotacije za više od
+$\alpha$ stupnjeva, što, pak, prikazuje \autoref{figure:susjed:rotacija}.
 
 \begin{figure}
 \centering
@@ -805,8 +791,8 @@ $\alpha$ stupnjeva.
 \end{scriptsize}
 \end{tikzpicture}
 \caption[Rotacija nizova]{Slika prikazuje
-maksimalu i minimalnu rotaciju nekog niza. Rotacija se radi oko
-izvorišta. Iako radimo u 3D prosturu, za primjer je dana 2D
+maksimalnu i minimalnu rotaciju nekog niza. Rotacija se radi oko
+izvorišta. Iako radimo u 3D prostoru, za primjer je dana 2D
 rotacija.}
 \label{figure:susjed:rotacija}
 \end{figure}
@@ -841,14 +827,14 @@ rotacija.}
 \end{scriptsize}
 \end{tikzpicture}
 \caption[Translacija nizova]{Slika prikazuje
-maksimalu i minimalnu translaciju nekog niza. 
-Iako radimo u 3D prosturu, za primjer je dana 2D
+maksimalnu i minimalnu translaciju nekog niza. 
+Iako radimo u 3D prostoru, za primjer je dana 2D
 translacija.}
 \label{figure:susjed:translacija}
 \end{figure}
 
 \subsection{Računanje energije}
-Za račuanje energije, koristimo prethodno opisani Smith-Waterman algoritam. 
+Za računanje energije, koristimo prethodno opisani Smith-Waterman algoritam. 
 Jedan ulazni niz je onaj koji želimo dobiti transformacijama, dok je drugi
 onaj za kojeg računamo energiju. 
 Budući da nam rekonstrukcija nije potrebna jer nas zanima samo energija,
@@ -894,7 +880,7 @@ P(e, e', T) =
 \end{array} \right.
 $$
 
-Primjetite da se, umjesto vremena, u njoj govori o temperaturi,
+Primijetite da se, umjesto vremena, u njoj govori o temperaturi,
 koja eksponencijalno pada kako vrijeme odmiče. 
 
 \autoref{figure:vjerojatnost} daje graf funkcije $P(\Delta e, T)$, gdje
@@ -924,13 +910,19 @@ na što utječu su brzina algoritma.
 Klasičan algoritam, kako je to gore objašnjeno, koristi samo jedan susjed u svakom
 koraku. Mi ćemo u našem rješenju koristiti više ($k$) njih. Od tako dobivenih,
 uzimamo onaj koji je najbolji i uspoređujemo ga, kako je gore opisano,
-s trenutnim stanjem. 
+s trenutnim stanjem. Na primjer, \autoref{figure:susjedi} prikazuje situaciju
+moguću situaciju kada imamo 20 susjeda za koje smo izračunali energiju.
+Od njih biramo stanje s najboljom energijom i nju uspoređujemo s energijom
+trenutnog stanja. U ovom slučaju, s obzirom da je energija susjednog stanja
+veća od one trenutnog, trenutno stanje postane susjedno.
 
 \begin{figure}
 \centering
 \includegraphics[scale=0.5]{res/energije_susjeda.png}
 \caption[Korištenje više susjeda u algoritmu simuliranog kaljenja]{
-Prikazan je slučaj kada imamo 20 susjeda. Energije svih susjeda koji
+Prikazan je slučaj kada imamo 20 susjeda. $S$ prikazuje trenutnu energiju
+(zelena boja), $Sn$ prikazuje energiju najboljeg do sada poznatog stanja,
+a energije susjeda prikazana su plavom bojom. Energije svih susjeda koji
 imaju energiju veću od trenutnog niza su označene tamno-plavom bojom,
 a jedino je energija najvećeg susjeda, u koju ćemo premjestiti trenutno
 stanje, pobojana u ljubičasto.}
@@ -940,8 +932,8 @@ stanje, pobojana u ljubičasto.}
 S obzirom da nam je svaki korak ocjenjivanja relativno skup, time se možemo
 osigurati rijetko odlazimo u slabija stanja. Međutim, takav pohlepan
 način odabira može nas dovesti u stanje lokalnog minimuma, iz kojeg se nećemo
-izvući. Da bismo pokušali otkloniti taj problem, u 10\% genirirat ćemo samo jednog
-susjeda u kojeg ćemo se, ako zadovljava uvjete, proširiti. 
+izvući. Da bismo pokušali otkloniti taj problem, u 10\% generirat ćemo samo jednog
+susjeda u kojeg ćemo se, ako zadovoljava uvjete, proširiti. 
 
 Također, pokazat će se u nastavku, ovime možemo nešto uštedjeti i na korištenju
 memorije i time povećati efikasnost koju dobijemo kada koristimo grafički
@@ -955,9 +947,9 @@ na način da se promijeni vrijeme (smanji se, tj. postavi se u prošlost).
 Time se poveća vjerojatnost da izađemo iz nekog lokalnog ekstrema koristeći
 neka lošija stanja. 
 
-U slučaju da se najbolje rješenje nije promjenilo u zadnjih 15 koraka, 
-vrijeme ćemo resetirati da bismo se pokušali pomaknuti iz mogućeg lokalnog
-ekstrema. 
+U slučaju da se najbolje rješenje nije promijenilo u zadnjih 15 koraka, 
+vrijeme ćemo vratiti na početnu vrijednost da bismo se pokušali
+pomaknuti iz mogućeg lokalnog ekstrema. 
 
 \section{Parametari}
 
@@ -971,18 +963,19 @@ koristili u implementaciji nisu previše istraženi.
 
 
 \chapter{CUDA tehnologija}
+\label{chapter:CUDA}
 \textit{Compute Unified Device Architecture} (engl.; računski objedinjena
 arhitektura uređaja) ili skraćeno CUDA, tehnologija je
 koja nam omogućuje da upregnemo moć grafičkih čipova na
 problemima za koje se tipično koristio CPU (odnosno procesor).
-Kopanija Nvidija razvila ju je za svoje grafičke kartice. 
+Kompanija Nvidija razvila ju je za svoje grafičke kartice. 
 
-CUDA se smatra najnaprednijim alatom za općenamjensku uporabu
+CUDA se smatra najnaprednijim alatom za opće-namjensku uporabu
 grafičke jedinice (engl. GPGPU - \textit{\textbf{g}eneral
 \textbf{p}urpose \textbf{g}raphics \textbf{p}rocessing \textbf{u}nit}).
 S obzirom da se grafičke kartice nalaze u gotovo svim
 računalima, a vrlo se rijetko koriste u svojoj punoj moći
-(obično samo u računalnim igrama), inžinjerima i znanstvenicima
+(obično samo u računalnim igrama), inženjerima i znanstvenicima
 palo je na pamet da ne bi bilo loše iskoristiti njihovu snagu
 u rješavanju općenitijih zadataka. 
 
@@ -1027,7 +1020,9 @@ paralelno.
 Mreža (engl. \textit{grid}) - skup blokova koji se izvršavaju paralelno.
 
 \item
-Dretva (engl. \textit{thread}) - 
+Dretva (engl. \textit{thread}) - najmanja jedinica izvršavanja koja se
+može izvršiti. Sve naredbe u njoj izvršavaju se nužno slijedno, ali
+se više dretvi može izvršavati paralelno.
 
 \item
 Osnova (engl. \textit{warp}) - skup dretvi unutar bloka koje
@@ -1049,7 +1044,7 @@ Nudi pristup bilo kojem dijelu memorije.
 Dretve mogu koristiti brzu zajedničku dijelnu memoriju. 
 
 \item
-Podrška za račun s cijelobrojnim tipovima podataka, uključujući
+Podrška za račun s cjelobrojnim tipovima podataka, uključujući
 i operacije s bitovima.
 \end{itemize}
 
@@ -1085,6 +1080,7 @@ po standardima, ali u većini slučajeva to ne igra nikakvu ulogu.
 
 
 \chapter{Implementacija}
+\label{chapter:Implementacija}
 
 %TODO nacrtaj UML dijagram, ako ce trebati jos nekoliko stranica
 
@@ -1117,14 +1113,14 @@ te vraća transformirano stanje koje dobijemo primjenjujući
 translaciju i/ili rotaciju.
 Drugi prima takvo transformirano stanje i računa njegovu
 energiju. To radi tako da primjeni prethodno opisani
-Smith-Waterman algoritam nad transforimarnim i ciljnem
+Smith-Waterman algoritam nad transforimarnim i ciljnim
 nizom, ali ne radimo rekonstrukciju. 
-Treći prima energiju početnog i krajenjeg niza te trenutnu
-temperaturu te iz toga računa vjerojansto prihvaćanja
+Treći prima energiju početnog i krajnjeg niza te trenutnu
+temperaturu te iz toga računa vjerojatnost prihvaćanja
 novog niza. 
 
 Zahvaljujući genericima, tj. predlošcima, u C++ je lagano
-ostaviriti ortogonalnost. Njihovom upotrebom, omogućavamo
+ostvariti ortogonalnost. Njihovom upotrebom, omogućavamo
 da kôd algoritma napišemo samo jednom i da ga potom možemo
 koristiti na više mjesta, za više tipova podataka,
 što upravo i želimo. 
@@ -1140,22 +1136,22 @@ lagano napraviti, autor je koristio neke jednostavnije
 probleme da bi ispravio pogreške u ovom dijelu koda. Primjeri
 tih problema su traženje specifične točke u prostoru, 
 traženje težišta poligona i optimizacije puta trgovačkog putnika. 
-Prilagodba algoritma za tu svrhu svela se na reimplantaciju
+Prilagodba algoritma za tu svrhu svela se na reimplementaciju
 funkcija za računanje energije i odabir susjeda. 
 
 
 \section{Implementacija Smith-Watermanovog algoritma}
 Do sada smo razmatrali samo situaciju kada računamo jedno
 po jedno polje matrice $R$. Pretpostavka je bila da su 
-sva polja u prošlim retcima i trenutnom retku do trenutnog
+sva polja u prošlim recima i trenutnom retku do trenutnog
 stupca izračunata i da ih možemo koristiti u daljnjem
 računu. 
 
-Međutim, kada koristimo masivno paralalene procesore, 
-želimo odjednonom računati više od jednog polja jer inače
-ne uprežemo svu snagu koju nam oni nude.
+Međutim, kada koristimo masivno paralelne procesore, 
+želimo odjednom računati više od jednog polja jer inače
+ne upregnemo svu snagu koju nam oni nude.
 
-Ideja na kojoj nam se temelji rješenje jest da primjetimo koja
+Ideja na kojoj nam se temelji rješenje jest da primijetimo koja
 su polja nezavisna, tj. koja možemo koristiti u računu ako
 smo do sada već izračunali neki dio rješenja. Definirajmo
 novu matricu $W$ u kojoj nam $W_{i,j}$ označava broj polja 
@@ -1205,18 +1201,19 @@ prikazana su izračunata polja, a svijetlo-sivom ona koja možemo izračunati. }
 
 Jasno je da možemo izračunati vrijednosti samo onih polja
 za koje je $W_{i,j}=0$. Na početku je takvo samo jedno polje:
-$W_{0,0}$. Međitim, kada njega izračunamo, smanjit ćemo
+$W_{0,0}$. Međutim, kada njega izračunamo, smanjit ćemo
 vrijednosti tri polja u matrici $W$: $W_{1,0}$, $W_{0,1}$ i
 $W_{1,1}$. To će uzrokovati da $W_{1,0}$ i $W_{0,1}$ postanu
-jednaki $0$, što znači da sada smijemo i njih izračanati.
+jednaki $0$, što znači da sada smijemo i njih izračunati.
 Kada to učinimo, i osvježimo vrijednosti u matrici $W$, 
 vidjet ćemo da smo dobili tri nove nule, na pozicijama
-$W_{2,0}$, $W_{0,2}$ i $W_{1,1}$. Pravilnost se već
+$W_{2,0}$, $W_{0,2}$ i $W_{1,1}$. \autoref{table:impl:sw:W}
+prikazuje popunjavanje matrice $W$. Pravilnost se već
 lagano počinje nazirati. Naime, sve elemente koji 
 se nalaze na istoj sporednoj dijagonali moći ćemo 
 izračunati u istom koraku. Stoga ćemo paralelizaciju
 temeljiti upravo na tome da u pojedinom koraku
-računamo sve elemente na sporednoj dijagonali. 
+računamo sve elemente na sporednoj dijagonali (\autoref{table:impl:sw:W}).
 
 \begin{table}
 \centering
@@ -1242,7 +1239,7 @@ dijagonala matrice. Sva polja na njoj možemo računati u istom trenutku.}
 Vremenska složenost takvog bi algoritma u optimalnom slučaju bila
 bi $O(M+N)$. Nažalost, realan je slučaj daleko od optimalnog. 
 Problem nam stvara to što nemamo dovoljno procesora da bismo
-mogli pokrenuti računanja nad svim elmentima dijagonale, ako je
+mogli pokrenuti računanja nad svim elementima dijagonale, ako je
 ona prevelika. Na sreću, CUDA nam ne stvara prevelike probleme
 ako koristimo stvorimo više blokova (do najviše 65536) nego što
 grafička kartica fizički može istovremeno izračunati. S obzirom
@@ -1250,7 +1247,7 @@ da dužina nizova vjerojatno neće biti puno veća od 15000 elemenata,
 takvo ograničenje je sasvim prihvatljivo.
 
 Isto tako, ako u memoriju grafičke kartice ne stanu
-oba niza (što će se dogoditi, nasreću, samo za iznimno
+oba niza (što će se dogoditi, na sreću, samo za iznimno
 duge nizove koje nećemo promatrati), morat ćemo prilagoditi
 algoritam. Jedna efikasna ideja
 za rješavanje tog problema jest da podijelimo nizove na manje
@@ -1260,7 +1257,7 @@ Međutim, to izlazi izvan teme ovog rada, pa nećemo
 ovdje detaljno objasniti kako se to radi.
 
 Također, moramo biti svjesni da će konstanta koja je sakrivena u O
-notaciji biti puno veća nego kod obične implementicje na procesoru,
+notaciji biti puno veća nego kod obične implementacije na procesoru,
 budući da moramo koristiti barijere za sinkronizaciju. Pozivanje
 funkcija također troši vrijeme, a i pristup globalnoj memoriji
 uređaja jest skuplji nego pristup radnoj memoriji računala. 
@@ -1270,8 +1267,60 @@ kao $O(\min(M,N))$. Dovoljno nam je da, umjesto posljednja dva reda,
 pamtimo posljednje tri sporedne dijagonale. Rekonstrukcija, iako
 nam neće biti potrebna, može se riješiti Hirschbergovim algoritmom. 
 
+\subsection{Uspoređivanje više nizova odjednom}
+Do sada je opisan problem uspoređivanja jednog niza s drugim. S obzirom
+na zahtjeve ovog rada (traženje transformacije jednog od nizova tako
+da maskimiziramo ocjenu preklapanja), valja razmotriti mogućnost da 
+uspoređujemo više nizova odjednom. Zanemarimo na trenutak činjenicu
+da smijemo transformirati samo jedan od dva dana niza. 
+
+Neka nam je $K$ broj nizova koje napravimo transformacijom prvog, a
+$L$ broj koji dobijemo transformacijom drugog. Ako spojimo sve
+transformacije prvog niza u jedan super-niz, tako da na među 
+dva niza ubacimo atom koji se nalazi u $+\infty$, te isto
+napravimo s drugim nizom (ali atome na međi stavimo u $-\infty$),
+možemo napraviti Smith-Watermanov algoritam nad tim super-nizovima.
+Budući da će rezultat pri usporedbi bilo koja dva atoma s
+onima na međi biti $-\infty$, jednostavno smo dobili resetiranije
+algoritma za svaki par nizova i time računom samo jednog
+Smith-Watermana možemo odjednom dobiti najbolje lokalno
+poravanje među $K \times L$ parova nizova. Ako odaberemo najbolje
+od tih lokalnih poravnanja, najbolji par transformacija je, jasno,
+onaj koji je napravio par nizova na čijem je presjeku nastalo
+to lokalno poravnanje.
+S obzirom da smo i do sad od više mogućih transformacija birali samo
+najbolju, to ćemo i ovaj put učiniti. 
+
+Prednost ovakvog pristupa jest da se broj elemenata na dijagonali 
+znatno povećava, čime se povećava i broj paralelnih računa.
+Osim toga, vrijeme prebacivanja iz jedne memorije na drugu
+i vrijeme potrebno da se kernel pokrene znatno se smanjuju.
+Preciznije, relativan odnos tih vremena s vremenom potrebnim
+da se izračuna Smith-Watermanov algoritam na danim nizovima 
+smanjuje se čak i do dva reda veličine! S obzirom da je
+kod kraćih nizova to vrijeme često i duže od vremena za računanje
+algoritma, time postižemo dosta dobro ubrzanje. 
+
+Glavni nedostatak jest povećavanje zahtjeva za memoriju.
+Međutim, budući da je korištenje memorije linearno u ovisnosti o
+dužini kraćeg niza, a nizovi nisu pretjerano dugački (oko 15,000
+elemenata svaki u najgorem slučaju), to ne predstavlja veliku
+manu. 
+
+Preostaje nam još jedino opisati način na koji transformiramo
+oba niza da možemo jednostavno pretvoriti pretvoriti te transformacije
+u transformaciju isključivo drugog niza. Odgovor na to pitanje
+vrlo je jednostavan - ako onaj niz koji prije nismo dirali sada
+translatiramo, a onaj koji smo prije transformirali sada samo
+rotiramo, konstrukcija transformacije isključivo drugog niza
+je trivijalna. Naime, na dobivenu rotaciju primijenimo inverznu
+translaciju prvog niza i tako dobijemo potpunu transformaciju
+isključivo drugog niza.
+
+
 
 \chapter{Rezultati}
+\label{chapter:Rezultati}
 
 Da provjerimo radi li nam program, pokrenuli smo ga
 na nekim primjerima za koje već znamo rješenje. 
@@ -1308,7 +1357,7 @@ transformaciji]{Uzeli smo protein 1a0iA i iz njega generirali
 nasumičnu transformaciju. Potom smo pokrenuli algoritam i dobili gotovo
 100\% preklapanje u manje od 10 koraka. Budući da se u 15 koraka
 trenutno riješenje nije promijenilo, nešto nakon 90. koraka
-smo resetirali temperaturu, kako bismo pokušali naći bolje rješenje.}
+smo vratili temperaturu, kako bismo pokušali naći bolje rješenje.}
 \label{figure:run_2}
 \end{figure}
 
@@ -1317,44 +1366,49 @@ smo resetirali temperaturu, kako bismo pokušali naći bolje rješenje.}
 
 
 \chapter{Zaključak}
-
+\label{chapter:Zakljucak}
 Jedan od najvećih problema s kojim se bioinformatika danas
 susreće je problem poravnanja struktura. Pojavom grafičkog sklopovlja
-koje omogućava općenamjensko računanje, znanstvenici su odmah
+koje omogućava opće-namjensko računanje, znanstvenici su odmah
 prionuli poslu i počeli raditi na projektima kojima je za cilj
-iskoristiti moć tih čipova za rješavanje problema provananja
+iskoristiti moć tih čipova za rješavanje problema poravnanja
 struktura. No, tehnologija koja se koristi za rješavanje tih problema
 još uvijek je u povojima. Svakih nekoliko mjeseci izlaze
 čipovi koji su mnogostruko jači u odnose na prethodne, ali i
-nešto promijenjenom arhitekturom koja obično omugaćava pisanje
-efikasnijih programa. Zbog toga programi vrlo brzo zastarjevaju,
+nešto promijenjenom arhitekturom koja obično omogućava pisanje
+efikasnijih programa. Zbog toga programi vrlo brzo zastarijevaju,
 a kako se povećava broj fizičkih jezgri koje kartice sadržavaju,
 mnoge pretpostavke koje su nam bile temelj osmišljavanja algoritma
 više ne vrijede. Za nekoliko godina moglo bi se dogoditi da grafička
 kartica ima i nekoliko stotina tisuća dretvi, što bi značilo
-da u većini slučajeva imamo dovoljno dretvi na raspologanju
+da u većini slučajeva imamo dovoljno dretvi na raspolaganju
 da sav posao koji možemo radimo paralelno. Time bismo mogli
 napraviti mnogo efikasnije algoritme. Također, pomoćni alati,
 biblioteke, pa čak i prevoditelj, su još u razvoju. 
 
 U ovom radu smo prikazali kako implementirati algoritam Smith-Waterman
-na CUDA grafičkoj kartici. On se koristi da pronađemo lakalno
+na CUDA grafičkoj kartici. On se koristi da pronađemo lokalno
 poravnanje dva niza. Specifičnost implementiranog je u tome što
 ne koristi supstitucijsku matricu kao osnovu za ocjenjivanje
-poravanja, već fiziče udaljenosti između molekula. Ta funkcija
+poravnanja, već fiziče udaljenosti između molekula. Ta funkcija
 sigurno se može još unaprijediti i time bi se rezultati također
 mogli poboljšati. Ako takvu implementaciju Smith-Watermanovog algoritma
 ukomponiramo kao sredstvo izračuna energije u simuliranjom
 ka{\-}lje{\-}nju,
 možemo pronaći takvu transformaciju
-drugog niza koja maksimizira vrijednost poravananja. Drugim riječima,
+drugog niza koja maksimizira vrijednost poravnanja. Drugim riječima,
 pomoću njega možemo ocijeniti sličnost dva niza, bez obzira na 
 njihovu početnu poziciju. 
 
+
+
 \nocite{*}
 
-\bibliography{literatura}{}
 \bibliographystyle{fer}
+\bibliography{literatura}
+
+
+
 
 \begin{sazetak}
 Algoritam dinamičkog programiranje Smith-Waterman služi nam da deterministički pronađemo lokalno poravnanje neka dva proteina. 
