@@ -5,6 +5,7 @@
 \usepackage{xcolor}
 \usepackage{colortbl}
 \usepackage{tabularx}
+\usepackage{algpseudocode}
 
 \usepackage{hyperref}
 \hypersetup{
@@ -1086,7 +1087,7 @@ po standardima, ali u većini slučajeva to ne igra nikakvu ulogu.
 
 \section{Implementacija simuliranog kaljenja}
 Simulirano kaljenje temelji se na postupku koji je identičan
-za sve tipove podataka. To nas navodi da implementaciju 
+za sve vrste podataka. To nas navodi da implementaciju 
 riješimo koristeći oblikovni obrazac okvirna metoda. 
 Ideja tog oblikovnog obrasca jest da imamo jednu
 metodu (funkciju) koja izvodi neki postupak pozivajući
@@ -1135,7 +1136,7 @@ Nažalost, kako ovo nije problem u kojem je vizualizaciju
 lagano napraviti, autor je koristio neke jednostavnije
 probleme da bi ispravio pogreške u ovom dijelu koda. Primjeri
 tih problema su traženje specifične točke u prostoru, 
-traženje težišta poligona i optimizacije puta trgovačkog putnika. 
+traženje težišta poligona i optimizacija puta trgovačkog putnika. 
 Prilagodba algoritma za tu svrhu svela se na reimplementaciju
 funkcija za računanje energije i odabir susjeda. 
 
@@ -1213,7 +1214,7 @@ lagano počinje nazirati. Naime, sve elemente koji
 se nalaze na istoj sporednoj dijagonali moći ćemo 
 izračunati u istom koraku. Stoga ćemo paralelizaciju
 temeljiti upravo na tome da u pojedinom koraku
-računamo sve elemente na sporednoj dijagonali (\autoref{table:impl:sw:W}).
+računamo sve elemente na sporednoj dijagonali (\autoref{table:impl:dijagonala}).
 
 \begin{table}
 \centering
@@ -1259,8 +1260,8 @@ ovdje detaljno objasniti kako se to radi.
 Također, moramo biti svjesni da će konstanta koja je sakrivena u O
 notaciji biti puno veća nego kod obične implementacije na procesoru,
 budući da moramo koristiti barijere za sinkronizaciju. Pozivanje
-funkcija također troši vrijeme, a i pristup globalnoj memoriji
-uređaja jest skuplji nego pristup radnoj memoriji računala. 
+funkcija na uređaju također troši vrijeme, a i pristup globalnoj
+memoriji uređaja jest skuplji nego pristup radnoj memoriji računala. 
 
 Što se memorijske složenosti tiče, i nju možemo ovdje ostvariti
 kao $O(\min(M,N))$. Dovoljno nam je da, umjesto posljednja dva reda,
@@ -1282,7 +1283,7 @@ napravimo s drugim nizom (ali atome na međi stavimo u $-\infty$),
 možemo napraviti Smith-Watermanov algoritam nad tim super-nizovima.
 Budući da će rezultat pri usporedbi bilo koja dva atoma s
 onima na međi biti $-\infty$, jednostavno smo dobili resetiranije
-algoritma za svaki par nizova i time računom samo jednog
+algoritma na početku svakog para nizova i time računom samo jednog
 Smith-Watermana možemo odjednom dobiti najbolje lokalno
 poravanje među $K \times L$ parova nizova. Ako odaberemo najbolje
 od tih lokalnih poravnanja, najbolji par transformacija je, jasno,
@@ -1297,11 +1298,11 @@ Osim toga, vrijeme prebacivanja iz jedne memorije na drugu
 i vrijeme potrebno da se kernel pokrene znatno se smanjuju.
 Preciznije, relativan odnos tih vremena s vremenom potrebnim
 da se izračuna Smith-Watermanov algoritam na danim nizovima 
-smanjuje se čak i do dva reda veličine! S obzirom da je
+smanjuje se za čak i do dva reda veličine! Kako je
 kod kraćih nizova to vrijeme često i duže od vremena za računanje
-algoritma, time postižemo dosta dobro ubrzanje. 
+algoritma, postižemo dosta dobro ubrzanje. 
 
-Glavni nedostatak jest povećavanje zahtjeva za memoriju.
+Glavni nedostatak ove metode jest povećavanje zahtjeva za memoriju.
 Međutim, budući da je korištenje memorije linearno u ovisnosti o
 dužini kraćeg niza, a nizovi nisu pretjerano dugački (oko 15,000
 elemenata svaki u najgorem slučaju), to ne predstavlja veliku
@@ -1317,24 +1318,104 @@ je trivijalna. Naime, na dobivenu rotaciju primijenimo inverznu
 translaciju prvog niza i tako dobijemo potpunu transformaciju
 isključivo drugog niza.
 
+\section{Konačna implementacija}
+
+Pogledajmo kako to u konačnici izgleda kada spojimo sve o čemu smo
+do sada pričali. \autoref{figure:flowchart} prikazuje dijagram toka
+algoritma simuliranog kaljenja. Pseudokod algoritma koji računa
+lokalno poravnanje za više nizova odjednom prikazuje
+\autoref{figure:pseudocode}.
+
+\begin{figure}
+\centering
+\includegraphics[scale=1.0]{res/SWIG.png}
+\caption[Dijagram toka implementacije simuliranog kaljenja]{Dijagram toka implementacije simuliranog kaljenja. }
+\label{figure:flowchart}
+\end{figure}
+
+\begin{figure}
+\centering
+\begin{algorithmic}
+\State $A \gets$ prazan protein
+\State $B \gets$ prazan protein
+\For{$i \in [1, K]$}
+	\State $A \gets A + T_i +$ atom koji se nalazi na $(\infty, \infty, \infty)$
+\EndFor
+\For{$j \in [1, L]$}
+	\State $B \gets B + R_j +$ atom koji se nalazi na $(-\infty, -\infty, -\infty)$
+\EndFor
+\State $A_{device} \gets$ kopija proteina $A$ na uređaju
+\State $B_{device} \gets$ kopija proteina $B$ na uređaju
+\State $N \gets$ dužina proteina $A$
+\State $M \gets$ dužina proteina $B$
+\State $H \gets$ posljednje tri dijagonale matrice ukupnog rješenja (na početku sve $0$)
+\State $H^A \gets$ posljednje tri dijagonale matrice procjepa u $A$ (na početku sve $0$)
+\State $H^B \gets$ posljednje tri dijagonale matrice procjepa u $B$ (na početku sve $0$)
+\State $res \gets$ vrijednost najboljeg poravnanja (na početku $0$)
+\State $p \gets $ par transformacija koji daje najbolje poravnanje (na početku $(1,1)$)
+\For{$d \in [1, N+M-1]$}
+	\State $izracunajCijeluDijagonaluNaGPU(d, H, H^A, H^B, A_{device}, B_{device}, N, M)$
+	\State $b \gets$ indeks polja zadnje dijagonale koje daje najveću vrijednost
+	\If{$H_b > res$}
+		\State $res \gets H_b$
+		\State $p \gets$ par transformacija koji se nalazi na $b$-tom polju dijagonale $d$
+	\EndIf
+\EndFor
+\State \Return $(res, p)$
+\end{algorithmic}
+\caption[Pseudokod modificiranog Smith-Waterman algoritma]{Pseudokod
+modificiranog Smith-Waterman algoritma koji koristimo u implementaciji.}
+\label{figure:pseudocode}
+\end{figure}
+
+
 
 
 \chapter{Rezultati}
 \label{chapter:Rezultati}
 
-Da provjerimo radi li nam program, pokrenuli smo ga
-na nekim primjerima za koje već znamo rješenje. 
-U ostalim slučajevima, za neku brzu provjeru vjerodostojnosti,
-izračunat ćemo energiju koju bismo imali ako bismo pokušali
-poravnati prvi niz sa samim
-sobom. Budući da je to ujedno i maksimalna energija koju potencijalno
+Za provjeru rada programa koristili smo primjere za koje već znamo
+neka dobra preklapanja. Uzeli smo proteine 1d0nA i 2d8bA, a dobivene
+rezultate prikazuju \autoref{figure:prije_poravnanja} i
+\autoref{figure:poslije_poravnanja}. Očito je da se može pronaći i
+bolje transformacije. Jedan od načina kojim potencijalno možemo
+poboljšati ovaj algoritam jest da smanjujemo pomake i rotacije susjeda
+kako se smanjuje i temperatura.
+Zbog toga što je udaljenost između molekula otprilike dva reda
+veličine manja nego početna udaljenost dva proteina, teško
+je napraviti finije pomake, a da se ipak molekule mogu
+"pronaći" na početku. 
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.4]{res/nonalligned.png}
+\caption[Proteini 1d0nA i 2d8bA prije poravnanja]{Pozicije u prostoru 
+proteina 1d0nA i 2d8bA prije nego što su poravnati.}
+\label{figure:prije_poravnanja}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.4]{res/alligned.png}
+\caption[Proteini 1d0nA i 2d8bA nakon poravnanja]{Pozicije u prostoru 
+proteina 1d0nA i 2d8bA nakon što su poravnati.}
+\label{figure:poslije_poravnanja}
+\end{figure}
+
+Kada prije pokretanja programa niti približno ne znamo točna rješenja,
+za neku jednostavnu provjeru vjerodostojnosti možemo
+izračunati energiju koju bismo imali ako bismo pokušali
+poravnati prvi niz sa samim sobom.
+Budući da je to ujedno i maksimalna energija koju potencijalno
 možemo pronaći, iz nje i najbolje pronađene energije možemo
 razumjeti koliko nas je algoritam simuliranog kaljenja doveo
 blizu rješenja. 
 
-U općem slučaju, zanima nas kako se mijenja energija kroz vrijeme,
+Alternativan način provjere jest da promatramo 
+mijenjanje energije kroz vrijeme,
 budući nju želimo maksimizirati. U nastavku
-su dani grafovi koji prikazuju tri energije: energiju najboljeg
+su dani grafovi (\autoref{figure:run_1} i \autoref{figure:run_2})
+koji prikazuju tri energije: energiju najboljeg
 susjeda, energiju najboljeg do sada pronađenog elementa i
 energiju trenutno aktivnog elementa. Osim toga, prikazuju i
 trenutnu temperaturu, da bi nam bilo jasno koliko često
@@ -1345,7 +1426,7 @@ prihvaćamo rješenja slabija od trenutnog.
 \includegraphics[scale=0.7]{res/run_1.png}
 \caption[Izvođenje programa na proteinima 1d0nA i 2d8bA]{Izvođenje programa
 na proteinima 1d0nA i 2d8bA. Uspjeli smo ostvariti otprilike
-20\% maksimalne moguće vrijednosti preklapanja (nešto manje od 730000). }
+20\% maksimalne moguće vrijednosti preklapanja (nešto manje od 730000).}
 \label{figure:run_1}
 \end{figure}
 
@@ -1357,10 +1438,17 @@ transformaciji]{Uzeli smo protein 1a0iA i iz njega generirali
 nasumičnu transformaciju. Potom smo pokrenuli algoritam i dobili gotovo
 100\% preklapanje u manje od 10 koraka. Budući da se u 15 koraka
 trenutno riješenje nije promijenilo, nešto nakon 90. koraka
-smo vratili temperaturu, kako bismo pokušali naći bolje rješenje.}
+smo vratili temperaturu na početnu vrijednost, kako bismo pokušali
+pronaći bolje rješenje micanjem iz lokalnog maksimuma.}
 \label{figure:run_2}
 \end{figure}
 
+Kako u ovom radu koristimo samo fizičke pozicije za usporedbu,
+jedna očitih od mogućnosti unaprjeđenja ovog rada jest da počnemo
+koristiti i biološka i kemijska svojstva atoma i molekula, odnosno
+nukleotida i proteina. Alternativno, programsko rješenje bi sigurno
+bilo privlačnije kada bi se dodatno ubrzalo, a to se sigurno može
+postići memorijskim optimizacijama, ali i unaprijeđenjem algoritma .
 
 
 
