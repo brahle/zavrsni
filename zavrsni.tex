@@ -1083,8 +1083,6 @@ po standardima, ali u većini slučajeva to ne igra nikakvu ulogu.
 \chapter{Implementacija}
 \label{chapter:Implementacija}
 
-%TODO nacrtaj UML dijagram, ako ce trebati jos nekoliko stranica
-
 \section{Implementacija simuliranog kaljenja}
 Simulirano kaljenje temelji se na postupku koji je identičan
 za sve vrste podataka. To nas navodi da implementaciju 
@@ -1343,7 +1341,7 @@ lokalno poravnanje za više nizova odjednom prikazuje
 \EndFor
 \For{$j \in [1, L]$}
 	\State $B \gets B + R_j +$ atom koji se nalazi na $(-\infty, -\infty, -\infty)$
-\EndFor
+\EndFor	
 \State $A_{device} \gets$ kopija proteina $A$ na uređaju
 \State $B_{device} \gets$ kopija proteina $B$ na uređaju
 \State $N \gets$ dužina proteina $A$
@@ -1375,9 +1373,10 @@ modificiranog Smith-Waterman algoritma koji koristimo u implementaciji.}
 \label{chapter:Rezultati}
 
 Za provjeru rada programa koristili smo primjere za koje već znamo
-neka dobra preklapanja. Uzeli smo proteine 1d0nA i 2d8bA, a dobivene
-rezultate prikazuju \autoref{figure:prije_poravnanja} i
-\autoref{figure:poslije_poravnanja}. Očito je da se može pronaći i
+neka dobra preklapanja. Uzeli smo proteine 1d0nA i 2d8bA.
+Situaciju prije preklapanja prikazuje \autoref{figure:prije_poravnanja}.
+Nakon što naš algoritam odradi posao, imamo situaciju koju prikazuje
+\autoref{figure:poslije_poravnanja}. Očito je da se mogu pronaći i
 bolje transformacije. Jedan od načina kojim potencijalno možemo
 poboljšati ovaj algoritam jest da smanjujemo pomake i rotacije susjeda
 kako se smanjuje i temperatura.
@@ -1443,12 +1442,45 @@ pronaći bolje rješenje micanjem iz lokalnog maksimuma.}
 \label{figure:run_2}
 \end{figure}
 
-Kako u ovom radu koristimo samo fizičke pozicije za usporedbu,
-jedna očitih od mogućnosti unaprjeđenja ovog rada jest da počnemo
-koristiti i biološka i kemijska svojstva atoma i molekula, odnosno
-nukleotida i proteina. Alternativno, programsko rješenje bi sigurno
+\section{Potencijalna unaprijeđenja}
+
+Osim prethodno opisanog poboljšanja koje bi nam omogućilo
+traženje finijeg poravnanja, možemo još štošta poboljšati
+da dobijemo kvalitetnija rješenja.
+
+Traženjem boljih i preciznijih konstanti možemo,
+kao i u svakom drugom optimizacijskom problemu baziranom
+na heuristici učiniti čuda i naći nekoliko puta bolja rješenja.
+Kako se to efikasno je dosta velika tema i prelazi granice ovog
+rada pa ćemo tu diskusiju preskočiti.
+
+Nasuprot generalnom poboljšanju, stoji poboljšanje specifično
+za našu primjenu. U ovom radu koristimo samo fizičke pozicije za usporedbu,
+pa očito postoji prostor za unaprjeđenje u vidu prilagođavanja funkcije 
+ocjenjivanja dvije molekule tako da počnemo
+koristiti biološka i kemijska svojstva atoma i molekula, odnosno
+nukleotida i proteina. Time bi rezultati koje dobijemo 
+mogli postati puno smisleniji, barem što se prirode tiče.
+
+Alternativno, programsko bi rješenje sigurno
 bilo privlačnije kada bi se dodatno ubrzalo, a to se sigurno može
-postići memorijskim optimizacijama, ali i unaprijeđenjem algoritma .
+postići raznim niskim optimizacijama i pažljivijom uporabom memorije.
+Drugi, elegantniji, način ubrzanja jest da 
+poboljšamo algoritam, a jedan od načina kako bismo to napravili
+jest da smanjimo broj malih dijagonala. To potencijalno
+možemo u nekoj mjeri efikasno napraviti ako odjednom paralelno računamo
+Smith-Waterman algoritam na $O$ parova nizova,
+pri čemu u svakom koraku računamo istu dijagonalu za sve parove.
+Time, unatoč tome što
+nam je prva dijagonala dužine 1, krenemo odmah računati
+$O$ njih, što smanjuje relativnu cijenu korištenja CUDA 
+arhitekture (pozivi kernel funkcija, kopiranje u memoriju,
+sinkronizacija...).
+Osim toga, u svakom bi koraku broj elemenata koje
+možemo izračunati rastao za $O$, čime bismo puno brže došli
+do trenutka kada se trošak pokretanja paralelnog računa
+isplati. 
+
 
 
 
